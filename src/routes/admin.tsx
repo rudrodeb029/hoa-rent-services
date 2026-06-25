@@ -481,9 +481,6 @@ function AdminPage() {
                   <div className="text-xl sm:text-2xl font-black text-slate-800 mt-1">
                     ${totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <div className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
-                    <ArrowRight className="h-3 w-3 -rotate-45" /> Ledger Settlement
-                  </div>
                 </div>
                 {/* Stat 2 */}
                 <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-soft relative overflow-hidden group hover:border-amber-200 transition duration-300">
@@ -493,9 +490,6 @@ function AdminPage() {
                   <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Awaiting Review</div>
                   <div className="text-xl sm:text-2xl font-black text-slate-800 mt-1">
                     {pendingPayments.length} pending
-                  </div>
-                  <div className="text-[10px] text-amber-600 font-bold mt-1.5 flex items-center gap-1">
-                    {pendingPayments.length > 0 && <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />} Action Needed
                   </div>
                 </div>
                 {/* Stat 3 */}
@@ -507,7 +501,6 @@ function AdminPage() {
                   <div className="text-xl sm:text-2xl font-black text-slate-800 mt-1">
                     ${escrowBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <div className="text-[10px] text-indigo-600 font-bold mt-1.5">Segregated Escrow Accounts</div>
                 </div>
                 {/* Stat 4 */}
                 <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-soft relative overflow-hidden group hover:border-violet-200 transition duration-300">
@@ -516,7 +509,6 @@ function AdminPage() {
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">OCR Approval Rate</div>
                   <div className="text-xl sm:text-2xl font-black text-slate-800 mt-1">{successRate}%</div>
-                  <div className="text-[10px] text-indigo-600 font-bold mt-1.5">Compliance Scan Success</div>
                 </div>
               </div>
 
