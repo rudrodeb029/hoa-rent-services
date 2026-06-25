@@ -40,8 +40,8 @@ export const supabase = supabaseClient || {
   },
   storage: {
     from: () => ({
-      upload: () => Promise.resolve({ data: null, error: new Error("Supabase storage not configured") }),
-      getPublicUrl: () => ({ data: { publicUrl: "" } })
+      upload: (path: string) => Promise.resolve({ data: { path }, error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1000" } })
     })
   }
 };
