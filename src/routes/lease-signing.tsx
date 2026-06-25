@@ -59,6 +59,9 @@ function Highlight({ children }: { children: React.ReactNode }) {
 function LeasePage() {
   const activeState = useAppStore((s) => s.activeState);
   const setActiveState = useAppStore((s) => s.setActiveState);
+  const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
   const j = JURISDICTIONS[activeState];
 
   const [tenant, setTenant] = useState("");
@@ -98,9 +101,6 @@ function LeasePage() {
   const [builderStep, setBuilderStep] = useState(0);
 
   // wizard step 2 payment options
-  const logPayment = useAppStore((s) => s.logPayment);
-  const pageSettings = useAppStore((s) => s.pageSettings);
-  const payments = useAppStore((s) => s.payments);
   const [payGateway, setPayGateway] = useState<"venmo" | "cashapp" | "chime">("venmo");
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "waiting" | "confirmed">("idle");
   const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
