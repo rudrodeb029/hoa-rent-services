@@ -273,7 +273,7 @@ function RootComponent() {
   const initializeStore = useAppStore((s) => s.initializeStore);
   const syncDatabase = useAppStore((s) => s.syncDatabase);
   const state = useRouterState();
-  const isAdminRoute = state.location.pathname.startsWith("/admin");
+  const isAdminRoute = state.location.pathname === "/admin" || state.location.pathname.startsWith("/admin/");
 
   useEffect(() => {
     initializeStore();
