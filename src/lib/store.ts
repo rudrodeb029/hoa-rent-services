@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { StateCode } from "./compliance";
 import type { Payment, Property, Unit, User, PaymentStatus } from "./types";
+import { supabase } from "./supabase";
 
 const uid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
@@ -45,6 +46,9 @@ interface AppState {
   updatePaymentStatus: (id: string, status: PaymentStatus) => void;
 
   logPayment: (p: Omit<Payment, "id" | "timestamp">) => Payment;
+  
+  isLoading: boolean;
+  initializeStore: () => Promise<void>;
 }
 
 const seedUsers: User[] = [
@@ -89,19 +93,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   properties: seedProperties,
   units: seedUnits,
   pageSettings: defaultSettings,
+  isLoading: false,
   
-  updatePageSettings: (settings) => set({
-    pageSettings: { ...get().pageSettings, ...settings }
-  }),
-
-  updatePaymentStatus: (id, status) => set({
-    payments: get().payments.map(p => p.id === id ? { ...p, status } : p)
-  }),
-
   payments: [
     {
       id: "seed-pay-0001",
-      amount: 20,
+      amount: 40,
       classification: "application_fee",
       status: "completed",
       processor: "Stripe_Card",
@@ -119,9 +116,171 @@ export const useAppStore = create<AppState>((set, get) => ({
     },
   ],
 
+  initializeStore: async () => {
+    set({ isLoading: true });
+    try {
+      // 1. Fetch Page Settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from("page_settings")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      
+      if (!settingsError && settingsData) {
+        set({
+          pageSettings: {
+            appFeeAmount: Number(settingsData.app_fee_amount),
+            appFeeDisclosures: settingsData.app_fee_disclosures,
+            holdingFeeAmount: Number(settingsData.holding_fee_amount),
+            holdingReservationDays: Number(settingsData.holding_reservation_days),
+            holdingLandlordName: settingsData.holding_landlord_name,
+            leaseLandlordName: settingsData.lease_landlord_name,
+            leaseLandlordAddress: settingsData.lease_landlord_address,
+            leaseLandlordEmail: settingsData.lease_landlord_email,
+            leaseFurnishedStatus: settingsData.lease_furnished_status,
+            leasePetPolicy: settingsData.lease_pet_policy,
+            securityBankName: settingsData.security_bank_name,
+            securityBankAddress: settingsData.security_bank_address,
+            securityCustomApr: Number(settingsData.security_custom_apr),
+            rentGraceDays: Number(settingsData.rent_grace_days),
+            rentLateFeePercent: Number(settingsData.rent_late_fee_percent),
+          }
+        });
+      }
+
+      // 2. Fetch Payments
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from("payments")
+        .select("*")
+        .order("timestamp", { ascending: false });
+
+      if (!paymentsError && paymentsData && paymentsData.length > 0) {
+        set({
+          payments: paymentsData.map((p: any) => ({
+            id: p.id,
+            applicationId: p.application_id || undefined,
+            amount: Number(p.amount),
+            classification: p.classification,
+            status: p.status,
+            processor: p.processor,
+            state: p.state,
+            timestamp: p.timestamp,
+            tenantName: p.tenant_name || undefined,
+            unitAddress: p.unit_address || undefined,
+            proofImage: p.proof_image || undefined
+          }))
+        });
+      }
+
+      // 3. Fetch Users, Properties, Units (fallback to seed arrays if empty)
+      const { data: usersData } = await supabase.from("users").select("*");
+      if (usersData && usersData.length > 0) {
+        set({ users: usersData });
+      }
+
+      const { data: propsData } = await supabase.from("properties").select("*");
+      if (propsData && propsData.length > 0) {
+        set({
+          properties: propsData.map((pr: any) => ({
+            id: pr.id,
+            name: pr.name,
+            street: pr.street,
+            city: pr.city,
+            state: pr.state,
+            zip: pr.zip
+          }))
+        });
+      }
+
+      const { data: unitsData } = await supabase.from("units").select("*");
+      if (unitsData && unitsData.length > 0) {
+        set({
+          units: unitsData.map((u: any) => ({
+            id: u.id,
+            propertyId: u.property_id,
+            unitNumber: u.unit_number,
+            baseRent: Number(u.base_rent),
+            bedrooms: Number(u.bedrooms),
+            bathrooms: Number(u.bathrooms),
+            available: u.available
+          }))
+        });
+      }
+
+    } catch (err) {
+      console.error("Failed to initialize store from Supabase:", err);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updatePageSettings: (settings) => {
+    const newSettings = { ...get().pageSettings, ...settings };
+    set({ pageSettings: newSettings });
+
+    supabase
+      .from("page_settings")
+      .update({
+        app_fee_amount: newSettings.appFeeAmount,
+        app_fee_disclosures: newSettings.appFeeDisclosures,
+        holding_fee_amount: newSettings.holdingFeeAmount,
+        holding_reservation_days: newSettings.holdingReservationDays,
+        holding_landlord_name: newSettings.holdingLandlordName,
+        lease_landlord_name: newSettings.leaseLandlordName,
+        lease_landlord_address: newSettings.leaseLandlordAddress,
+        lease_landlord_email: newSettings.leaseLandlordEmail,
+        lease_furnished_status: newSettings.leaseFurnishedStatus,
+        lease_pet_policy: newSettings.leasePetPolicy,
+        security_bank_name: newSettings.securityBankName,
+        security_bank_address: newSettings.securityBankAddress,
+        security_custom_apr: newSettings.securityCustomApr,
+        rent_grace_days: newSettings.rentGraceDays,
+        rent_late_fee_percent: newSettings.rentLateFeePercent,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", 1)
+      .then(({ error }) => {
+        if (error) console.error("Error updating page settings in Supabase:", error);
+      });
+  },
+
+  updatePaymentStatus: (id, status) => {
+    set({
+      payments: get().payments.map(p => p.id === id ? { ...p, status } : p)
+    });
+
+    supabase
+      .from("payments")
+      .update({ status })
+      .eq("id", id)
+      .then(({ error }) => {
+        if (error) console.error("Error updating payment status in Supabase:", error);
+      });
+  },
+
   logPayment: (p) => {
     const payment: Payment = { ...p, id: uid(), timestamp: new Date().toISOString() };
     set({ payments: [payment, ...get().payments] });
+
+    supabase
+      .from("payments")
+      .insert({
+        id: payment.id,
+        application_id: payment.applicationId || null,
+        amount: payment.amount,
+        classification: payment.classification,
+        status: payment.status,
+        processor: payment.processor,
+        state: payment.state,
+        timestamp: payment.timestamp,
+        tenant_name: payment.tenantName || null,
+        unit_address: payment.unitAddress || null,
+        proof_image: payment.proofImage || null
+      })
+      .then(({ error }) => {
+        if (error) console.error("Error inserting payment to Supabase:", error);
+      });
+
     return payment;
   },
 }));

@@ -270,6 +270,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const initializeStore = useAppStore((s) => s.initializeStore);
+
+  useEffect(() => {
+    initializeStore();
+  }, [initializeStore]);
 
   return (
     <QueryClientProvider client={queryClient}>

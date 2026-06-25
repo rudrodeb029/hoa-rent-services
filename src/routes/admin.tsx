@@ -243,29 +243,39 @@ function AdminPage() {
                       {/* Simulated Receipt inside phone frame */}
                       <div 
                         onClick={() => setSelectedProofPayment(p)}
-                        className="w-36 h-56 rounded-xl bg-white border-2 border-slate-700 shadow-lg overflow-hidden flex flex-col justify-between p-2.5 cursor-pointer transform transition hover:scale-105"
+                        className="w-36 h-56 rounded-xl bg-white border-2 border-slate-700 shadow-lg overflow-hidden flex flex-col justify-between p-2.5 cursor-pointer transform transition hover:scale-105 relative"
                       >
-                        {/* Top App bar */}
-                        <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
-                          <span className="text-[7px] font-extrabold text-slate-400 uppercase tracking-widest">{p.processor}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        </div>
-                        
-                        {/* Body Details */}
-                        <div className="text-center my-auto space-y-1">
-                          <div className="mx-auto w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                            <Check className="h-4 w-4" />
-                          </div>
-                          <div className="text-[10px] font-bold text-slate-500">Transaction Complete</div>
-                          <div className="text-sm font-extrabold text-slate-800">${p.amount.toFixed(2)}</div>
-                          <div className="text-[7px] text-slate-400">Paid to: HOA Rent Services</div>
-                        </div>
+                        {p.proofImage && p.proofImage.startsWith("http") ? (
+                          <img 
+                            src={p.proofImage} 
+                            alt="Payment Proof" 
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            {/* Top App bar */}
+                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                              <span className="text-[7px] font-extrabold text-slate-400 uppercase tracking-widest">{p.processor}</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            </div>
+                            
+                            {/* Body Details */}
+                            <div className="text-center my-auto space-y-1">
+                              <div className="mx-auto w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <Check className="h-4 w-4" />
+                              </div>
+                              <div className="text-[10px] font-bold text-slate-500">Transaction Complete</div>
+                              <div className="text-sm font-extrabold text-slate-800">${p.amount.toFixed(2)}</div>
+                              <div className="text-[7px] text-slate-400">Paid to: HOA Rent Services</div>
+                            </div>
 
-                        {/* Footer reference */}
-                        <div className="pt-1.5 border-t border-slate-50 flex justify-between items-center text-[6px] text-slate-400">
-                          <span>Ref: tx_{p.id.slice(0,6)}</span>
-                          <span>Click to Zoom</span>
-                        </div>
+                            {/* Footer reference */}
+                            <div className="pt-1.5 border-t border-slate-50 flex justify-between items-center text-[6px] text-slate-400">
+                              <span>Ref: tx_{p.id.slice(0,6)}</span>
+                              <span>Click to Zoom</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -497,6 +507,16 @@ function AdminPage() {
                   <span>10:00 AM</span>
                   <span className="flex items-center gap-1">100% <ShieldCheck className="h-2 w-2 text-emerald-500" /></span>
                 </div>
+
+                {selectedProofPayment.proofImage && selectedProofPayment.proofImage.startsWith("http") && (
+                  <div className="mt-2 w-full h-48 border border-slate-200 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                    <img 
+                      src={selectedProofPayment.proofImage} 
+                      alt="Uploaded Receipt" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
 
                 {/* Receipt Interior */}
                 <div className="space-y-4 py-4 text-xs">
