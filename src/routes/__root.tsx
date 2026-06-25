@@ -271,12 +271,20 @@ function RootComponent() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const initializeStore = useAppStore((s) => s.initializeStore);
+  const syncDatabase = useAppStore((s) => s.syncDatabase);
   const state = useRouterState();
   const isAdminRoute = state.location.pathname.startsWith("/admin");
 
   useEffect(() => {
     initializeStore();
-  }, [initializeStore]);
+
+    // Poll the database every 4 seconds to sync transactions/settings across clients
+    const interval = setInterval(() => {
+      syncDatabase();
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [initializeStore, syncDatabase]);
 
   return (
     <QueryClientProvider client={queryClient}>

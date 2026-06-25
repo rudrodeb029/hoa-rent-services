@@ -56,24 +56,34 @@ function DepositPage() {
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
     if (pendingPayment && pendingPayment.status === "completed") {
-      setPaymentStatus("confirmed");
-      setFunded(true);
-      setVerificationLogs((prev) => [
-        ...prev,
-        "Payment verified & accepted by Administrator!",
-        "Escrow trust account funded successfully.",
-      ]);
-      const formattedProcessor = paymentMethod
-        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
-        : "Admin Confirmed Receipt";
-      setProcessor(formattedProcessor);
+      setPaymentStatus((currStatus) => {
+        if (currStatus !== "confirmed") {
+          setFunded(true);
+          setVerificationLogs((prev) => [
+            ...prev,
+            "Payment verified & accepted by Administrator!",
+            "Escrow trust account funded successfully.",
+          ]);
+          const formattedProcessor = paymentMethod
+            ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+            : "Admin Confirmed Receipt";
+          setProcessor(formattedProcessor);
+          return "confirmed";
+        }
+        return currStatus;
+      });
     } else if (pendingPayment && pendingPayment.status === "failed") {
-      setPaymentStatus("idle");
-      setVerificationLogs([]);
-      setPendingPaymentId(null);
-      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+      setPaymentStatus((currStatus) => {
+        if (currStatus !== "idle") {
+          setVerificationLogs([]);
+          setPendingPaymentId(null);
+          alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+          return "idle";
+        }
+        return currStatus;
+      });
     }
-  }, [pendingPayment]);
+  }, [pendingPayment, paymentMethod]);
 
   const tiers = useMemo(() => {
     return [

@@ -49,6 +49,7 @@ interface AppState {
   
   isLoading: boolean;
   initializeStore: () => Promise<void>;
+  syncDatabase: () => Promise<void>;
 }
 
 const seedUsers: User[] = [
@@ -211,6 +212,65 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.error("Failed to initialize store from Supabase:", err);
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  syncDatabase: async () => {
+    try {
+      // 1. Fetch Page Settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from("page_settings")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      
+      if (!settingsError && settingsData) {
+        set({
+          pageSettings: {
+            appFeeAmount: Number(settingsData.app_fee_amount),
+            appFeeDisclosures: settingsData.app_fee_disclosures,
+            holdingFeeAmount: Number(settingsData.holding_fee_amount),
+            holdingReservationDays: Number(settingsData.holding_reservation_days),
+            holdingLandlordName: settingsData.holding_landlord_name,
+            leaseLandlordName: settingsData.lease_landlord_name,
+            leaseLandlordAddress: settingsData.lease_landlord_address,
+            leaseLandlordEmail: settingsData.lease_landlord_email,
+            leaseFurnishedStatus: settingsData.lease_furnished_status,
+            leasePetPolicy: settingsData.lease_pet_policy,
+            securityBankName: settingsData.security_bank_name,
+            securityBankAddress: settingsData.security_bank_address,
+            securityCustomApr: Number(settingsData.security_custom_apr),
+            rentGraceDays: Number(settingsData.rent_grace_days),
+            rentLateFeePercent: Number(settingsData.rent_late_fee_percent),
+          }
+        });
+      }
+
+      // 2. Fetch Payments
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from("payments")
+        .select("*")
+        .order("timestamp", { ascending: false });
+
+      if (!paymentsError && paymentsData) {
+        set({
+          payments: paymentsData.map((p: any) => ({
+            id: p.id,
+            applicationId: p.application_id || undefined,
+            amount: Number(p.amount),
+            classification: p.classification,
+            status: p.status,
+            processor: p.processor,
+            state: p.state,
+            timestamp: p.timestamp,
+            tenantName: p.tenant_name || undefined,
+            unitAddress: p.unit_address || undefined,
+            proofImage: p.proof_image || undefined
+          }))
+        });
+      }
+    } catch (err) {
+      console.error("Failed to sync store from Supabase:", err);
     }
   },
 
