@@ -1,0 +1,32 @@
+name: Supabase Database CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Initialize Supabase Project
+        run: supabase init
+
+      - name: Start Local Database
+        run: supabase start
+
+      - name: Verify Schema SQL Syntax
+        run: |
+          # Wait for PostgreSQL to be ready and apply the schema to confirm syntax validity
+          PGPASSWORD=postgres psql -h localhost -p 54322 -U postgres -d postgres -f supabase_schema.sql
