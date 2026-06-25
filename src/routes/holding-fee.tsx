@@ -1,0 +1,346 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Download, AlertTriangle, FileSignature, CreditCard, ClipboardCheck, Loader2, ShieldCheck, CheckCircle2, Check, Copy } from "lucide-react";
+import { Banner } from "@/components/compliance/Banner";
+import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Textarea } from "@/components/shared/Primitives";
+import { StepHeader, StepPanel } from "@/components/shared/StepWizard";
+import { ProofUpload } from "@/components/shared/ProofUpload";
+import { downloadHoldingAgreement } from "@/lib/pdf";
+import { useAppStore } from "@/lib/store";
+
+export const Route = createFileRoute("/holding-fee")({
+  head: () => ({
+    meta: [
+      { title: "Reserve Your Next Home — HOA Rent Services" },
+      { name: "description", content: "Reserve your next home with clear agreements and transparency built on trust." },
+    ],
+  }),
+  component: HoldingPage,
+});
+
+const STEPS = ["Reservation Details", "Our Agreement", "Secure Reservation", "Completion & Copy"];
+
+function HoldingPage() {
+  const activeState = useAppStore((s) => s.activeState);
+  const logPayment = useAppStore((s) => s.logPayment);
+  const [step, setStep] = useState(0);
+  const [unit, setUnit] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [terms, setTerms] = useState("");
+  const [name, setName] = useState("");
+  const [typedSig, setTypedSig] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [authorized, setAuthorized] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+
+  // Payment states matching app-fee page
+  const [paymentMethod, setPaymentMethod] = useState<"cashapp" | "venmo" | "chime" | null>(null);
+  const [paymentProofFile, setPaymentProofFile] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "uploading" | "waiting" | "confirmed">("idle");
+  const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
+  const [processor, setProcessor] = useState<string | null>(null);
+
+  const signed = typedSig.trim().toLowerCase() === name.trim().toLowerCase() && name.length > 1;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const startPaymentVerification = (fileName: string) => {
+    setPaymentProofFile(fileName);
+    setPaymentStatus("waiting");
+    setVerificationLogs(["Initializing digital verification protocol..."]);
+    
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Uploading proof screenshot..."]);
+    }, 1000);
+    
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Analyzing transaction image (OCR check)..."]);
+    }, 2000);
+    
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Matching transaction reference code on the ledger..."]);
+    }, 3500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Payment verified successfully! Reservation hold confirmed."]);
+      setPaymentStatus("confirmed");
+      setAuthorized(true);
+      const formattedProcessor = paymentMethod 
+        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Verified: ${fileName})` 
+        : `Verified Proof (${fileName})`;
+      setProcessor(formattedProcessor);
+      logPayment({ 
+        amount, 
+        classification: "holding_fee", 
+        status: "held", 
+        processor: (paymentMethod ? `Verified_${paymentMethod.toUpperCase()}` : "Verified_Proof") as any, 
+        state: activeState 
+      });
+    }, 5000);
+  };
+
+  return (
+    <PageShell>
+      <PageHeader title="Reserve Your Home" subtitle="Securely reserve a home while we prepare your lease, with clear agreements built on mutual trust." icon={<ClipboardCheck className="h-5 w-5" />} />
+      <Card className="mb-6">
+        <div className="border-b border-slate-100 p-5"><StepHeader steps={STEPS} current={step} /></div>
+        <div className="p-6">
+          <StepPanel keyId={step}>
+            {step === 0 && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
+                <Field label="Unit number"><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. 4B" /></Field>
+                <Field label="Holding amount (USD)"><Input type="number" value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} placeholder="e.g. 500" /></Field>
+                <Field label="Reservation start"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
+                <Field label="Reservation end"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
+                <Field label="Terms" hint="Free-form reservation terms"><Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="e.g. 12-month lease, first month + security at signing." /></Field>
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button disabled={!unit || !start || !end || !name.trim()} onClick={() => setStep(1)}>Continue</Button>
+                </div>
+              </div>
+            )}
+            {step === 1 && (
+              <div className="space-y-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-800"><FileSignature className="h-4 w-4" /> Reservation Holding Agreement</div>
+                  <p className="text-sm leading-relaxed text-slate-700">
+                    On {new Date().toLocaleDateString()}, Morgan Landlord and the Prospective Tenant agree to reserve unit <strong>{unit}</strong> from <strong>{start || "—"}</strong> through <strong>{end || "—"}</strong>.
+                    Tenant authorizes a $<strong>{amount.toFixed(2)}</strong> holding deposit, held pursuant to a 30-day manual authorization.
+                    Funds are not debited until execution of a binding lease, and shall be refunded in full if Landlord fails to deliver the unit.
+                  </p>
+                  <p className="mt-2 text-xs text-slate-500">Terms: {terms}</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Renter" /></Field>
+                  <Field label="Type your name to sign" hint="Must match exactly"><Input value={typedSig} onChange={(e) => setTypedSig(e.target.value)} /></Field>
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
+                  <Button disabled={!signed} onClick={() => setStep(2)}>Sign & continue</Button>
+                </div>
+              </div>
+            )}
+            {step === 2 && (
+              <div className="space-y-5">
+                <style dangerouslySetInnerHTML={{__html: `
+                  @keyframes scan {
+                    0%, 100% { top: 0%; }
+                    50% { top: 100%; }
+                  }
+                  .scanner-line {
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+                    position: absolute;
+                    width: 100%;
+                    animation: scan 2.5s infinite linear;
+                  }
+                `}} />
+                <Banner tone="warn" title="30-Day Manual Authorization Hold">
+                  This is a card pre-authorization hold. No funds are captured until the lease is executed. The hold expires automatically after 30 days.
+                </Banner>
+
+                {amount === 0 ? (
+                  <Banner tone="ok" title="No hold amount required">
+                    No reservation hold fee is required at this time. You may proceed directly.
+                  </Banner>
+                ) : (
+                  <>
+                    {paymentStatus === "idle" && (
+                      <div className="space-y-5">
+                        <div className="text-center">
+                          <h3 className="text-sm font-semibold text-slate-800">Choose your preferred payment method</h3>
+                          <p className="text-xs text-slate-500 mt-1">Holding Fee: <strong className="text-indigo-600">${amount.toFixed(2)}</strong>. Select a digital gateway to view handles & QR.</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+                          <button
+                            onClick={() => setPaymentMethod("venmo")}
+                            className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                              paymentMethod === "venmo"
+                                ? "border-blue-600 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/40 scale-[1.04] z-10"
+                                : "border-slate-200/80 bg-gradient-to-br from-blue-50/20 to-blue-100/10 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
+                            }`}
+                          >
+                            <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${paymentMethod === "venmo" ? "text-white" : "text-[#008CFF]"}`}>Venmo</span>
+                          </button>
+
+                          <button
+                            onClick={() => setPaymentMethod("cashapp")}
+                            className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                              paymentMethod === "cashapp"
+                                ? "border-emerald-600 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white font-bold shadow-[0_8px_20px_rgba(16,185,129,0.3)] ring-2 ring-emerald-400/40 scale-[1.04] z-10"
+                                : "border-slate-200/80 bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
+                            }`}
+                          >
+                            <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${paymentMethod === "cashapp" ? "text-white" : "text-[#00D632]"}`}>Cash App</span>
+                          </button>
+
+                          <button
+                            onClick={() => setPaymentMethod("chime")}
+                            className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                              paymentMethod === "chime"
+                                ? "border-teal-600 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white font-bold shadow-[0_8px_20px_rgba(20,184,166,0.3)] ring-2 ring-teal-400/40 scale-[1.04] z-10"
+                                : "border-slate-200/80 bg-gradient-to-br from-teal-50/20 to-teal-100/10 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
+                            }`}
+                          >
+                            <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${paymentMethod === "chime" ? "text-white" : "text-[#25C974]"}`}>Chime</span>
+                          </button>
+                        </div>
+
+                        {paymentMethod && (
+                          <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
+                            <div className="flex flex-col sm:flex-row gap-6 items-center">
+                              {/* QR Code Scan Container */}
+                              <div className="relative w-36 h-36 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                                <div className="scanner-line" />
+                                <QRCodeSVG />
+                              </div>
+
+                              {/* Details */}
+                              <div className="space-y-2 flex-1 w-full text-center sm:text-left">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                  {paymentMethod === "venmo" && "Venmo Gateway"}
+                                  {paymentMethod === "cashapp" && "Cash App Gateway"}
+                                  {paymentMethod === "chime" && "Chime Digital Portal"}
+                                </h4>
+                                <div className="text-sm font-semibold text-slate-800">
+                                  Amount Due: <span className="text-indigo-600">${amount.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-2 max-w-sm mt-1">
+                                  <span className="font-mono text-xs text-slate-700 truncate select-all">
+                                    {paymentMethod === "venmo" && "@hoarentservices"}
+                                    {paymentMethod === "cashapp" && "$hoarentservices"}
+                                    {paymentMethod === "chime" && "hoarentservices@chime.com"}
+                                  </span>
+                                  <button
+                                    onClick={() => copyToClipboard(
+                                      paymentMethod === "venmo" ? "@hoarentservices" :
+                                      paymentMethod === "cashapp" ? "$hoarentservices" : "hoarentservices@chime.com"
+                                    )}
+                                    className="p-1 rounded hover:bg-slate-200 text-slate-500"
+                                    title="Copy Handle"
+                                  >
+                                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                  </button>
+                                </div>
+                                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                                  Scan the QR code or pay to the handle above. Take a screenshot of your payment confirmation receipt and upload it below.
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Screenshot proof upload */}
+                            <div className="border-t border-slate-100 pt-4">
+                              <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex justify-start pt-2">
+                          <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {paymentStatus === "waiting" && (
+                      <div className="text-center py-6 space-y-4 max-w-md mx-auto">
+                        <div className="relative inline-flex items-center justify-center">
+                          <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
+                          <ShieldCheck className="h-5 w-5 text-indigo-400 absolute" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-slate-800">Verifying secure hold reservation...</h3>
+                          <p className="text-xs text-slate-500 mt-1">We're verifying the transaction proof screenshot on the state compliance ledger.</p>
+                        </div>
+                        <div className="bg-slate-950 text-emerald-400 font-mono text-[10px] text-left p-3.5 rounded-xl h-36 overflow-y-auto space-y-1 shadow-inner border border-slate-800">
+                          {verificationLogs.map((log, idx) => (
+                            <div key={idx} className="flex gap-2">
+                              <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString()}]</span>
+                              <span className="break-all">{log}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {paymentStatus === "confirmed" && (
+                      <div className="text-center py-6 space-y-4 max-w-md mx-auto">
+                        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                          <CheckCircle2 className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-slate-800">Holding Fee Funded!</h3>
+                          <p className="text-xs text-slate-500 mt-1">Transaction proof verified successfully. You may proceed to view your reservation copy.</p>
+                        </div>
+                        <Button className="w-full" onClick={() => setStep(3)}>Proceed to Completion</Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            {step === 3 && (
+              <div className="space-y-5">
+                <Banner tone="ok" title="Your reservation is secured!">
+                  Reservation hold for ${amount.toFixed(2)} is now active for unit {unit}. <Pill tone="emerald">30-day reservation</Pill>
+                </Banner>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card>
+                    <div className="p-5">
+                      <div className="text-sm font-semibold text-slate-800">Your Signed Agreement</div>
+                      <p className="mt-1 text-xs text-slate-500">Download a copy of your reservation agreement for safekeeping.</p>
+                      <Button className="mt-3" onClick={() => downloadHoldingAgreement({ name, unit, start, end, amount })}><Download className="h-4 w-4" /> Holding Agreement PDF</Button>
+                    </div>
+                  </Card>
+                  <Card>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-800"><AlertTriangle className="h-4 w-4 text-amber-500" /> Need help or support?</div>
+                      <p className="mt-1 text-xs text-slate-500">Open a friendly inquiry with our support desk if any questions arise.</p>
+                      <Button variant="secondary" className="mt-3" onClick={() => setDisputeOpen((o) => !o)}>{disputeOpen ? "Close" : "New ticket"}</Button>
+                    </div>
+                  </Card>
+                </div>
+                {disputeOpen && (
+                  <Card><div className="space-y-3 p-5">
+                    <Field label="Subject"><Input placeholder="Holding deposit refund" /></Field>
+                    <Field label="Details"><Textarea rows={4} placeholder="What happened?" /></Field>
+                    <Button variant="danger">Submit dispute</Button>
+                  </div></Card>
+                )}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                  <Button variant="ghost" onClick={() => { setStep(0); setAuthorized(false); setName(""); setTypedSig(""); }}>New reservation</Button>
+                  <Link to="/lease-signing">
+                    <Button variant="primary">Proceed to Lease Signing →</Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </StepPanel>
+        </div>
+      </Card>
+    </PageShell>
+  );
+}
+
+function QRCodeSVG() {
+  return (
+    <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
+      {/* Outer frame */}
+      <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
+      {/* Finder Patterns */}
+      <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
+      <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
+      <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
+      {/* Alignment Pattern */}
+      <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
+      {/* Timing and Random Data blocks */}
+      <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
+      <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
+      <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
+    </svg>
+  );
+}
