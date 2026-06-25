@@ -40,6 +40,9 @@ function AppFeePage() {
   const [processor, setProcessor] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
   const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cashapp" | "venmo" | "chime" | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "uploading" | "waiting" | "confirmed">("idle");
+  const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
 
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
@@ -92,11 +95,8 @@ function AppFeePage() {
   const [felony, setFelony] = useState("No");
   const [eviction, setEviction] = useState("No");
 
-  const [paymentMethod, setPaymentMethod] = useState<"cashapp" | "venmo" | "chime" | null>(null);
   const [copied, setCopied] = useState(false);
   const [paymentProofFile, setPaymentProofFile] = useState<string | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<"idle" | "uploading" | "waiting" | "confirmed">("idle");
-  const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
