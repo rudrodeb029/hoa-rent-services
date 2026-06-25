@@ -21,7 +21,8 @@ import {
   Receipt,
   ClipboardCheck,
   FileSignature,
-  Wallet
+  Wallet,
+  LogOut
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { Payment, PaymentStatus } from "@/lib/types";
@@ -38,6 +39,35 @@ function AdminPage() {
   const payments = useAppStore((s) => s.payments);
   const updatePageSettings = useAppStore((s) => s.updatePageSettings);
   const updatePaymentStatus = useAppStore((s) => s.updatePaymentStatus);
+
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = sessionStorage.getItem("admin_authenticated");
+    if (auth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (username.trim().toLowerCase() === "admin" && password === "admin123") {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("admin_authenticated", "true");
+      setErrorMsg(null);
+    } else {
+      setErrorMsg("Access Denied: Invalid credentials.");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("admin_authenticated");
+  };
 
   const [activeTab, setActiveTab] = useState<"settings" | "payments">("payments");
   const [selectedProofPayment, setSelectedProofPayment] = useState<Payment | null>(null);
@@ -124,6 +154,88 @@ function AdminPage() {
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 px-4 relative overflow-hidden select-none">
+        {/* Dynamic Mesh Gradients */}
+        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none -z-10 animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] rounded-full bg-violet-500/8 blur-[120px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '8s' }} />
+
+        {/* Blueprint background lines */}
+        <div 
+          className="absolute inset-0 opacity-[0.015] pointer-events-none -z-10" 
+          style={{ 
+            backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px), linear-gradient(to right, #4f46e5 1px, transparent 1px), linear-gradient(to bottom, #4f46e5 1px, transparent 1px)',
+            backgroundSize: '20px 20px, 100px 100px, 100px 100px'
+          }} 
+        />
+
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-md border border-slate-200/50 shadow-2xl rounded-2xl p-8 space-y-6 relative z-10">
+          <div className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm animate-pulse">
+              <ShieldAlert className="h-6 w-6" />
+            </div>
+            <h1 className="font-display text-xl font-bold text-slate-800">HOA Rent Services</h1>
+            <p className="text-xs text-slate-500">Enter administrative credentials to access the ledger, verification systems, and compliance overrides.</p>
+          </div>
+
+          {errorMsg && (
+            <div className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-800 border border-red-100 animate-bounce">
+              <XCircle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Username</label>
+              <input
+                type="text"
+                required
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700">Password</label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition cursor-pointer"
+            >
+              Authenticate Portal
+            </button>
+          </form>
+
+          {/* Preset credentials card for reviewers */}
+          <div className="rounded-lg bg-slate-50 border border-slate-100 p-3.5 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Reviewer Credentials</div>
+            <div className="flex justify-between text-xs text-slate-600">
+              <span>Username:</span>
+              <span className="font-mono font-bold text-slate-800">admin</span>
+            </div>
+            <div className="flex justify-between text-xs text-slate-600">
+              <span>Password:</span>
+              <span className="font-mono font-bold text-slate-800">admin123</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <PageShell>
       <PageHeader 
@@ -131,24 +243,33 @@ function AdminPage() {
         subtitle="Manage page details, review incoming digital assets, and verify direct compliance payments." 
         icon={<Settings className="h-5 w-5 animate-spin" style={{ animationDuration: '6s' }} />}
         right={
-          <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+          <div className="flex items-center gap-3">
+            <div className="flex rounded-lg border border-slate-200 bg-white p-1">
+              <button
+                onClick={() => setActiveTab("payments")}
+                className={`flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  activeTab === "payments" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                Payments ({pendingPayments.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("settings")}
+                className={`flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  activeTab === "settings" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Settings className="h-3.5 w-3.5" />
+                Page Settings
+              </button>
+            </div>
             <button
-              onClick={() => setActiveTab("payments")}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeTab === "payments" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-              }`}
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50/50 px-3.5 py-1.5 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 transition cursor-pointer shadow-sm"
             >
-              <Clock className="h-3.5 w-3.5" />
-              Payments ({pendingPayments.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeTab === "settings" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Settings className="h-3.5 w-3.5" />
-              Page Settings
+              <LogOut className="h-3.5 w-3.5" />
+              Logout
             </button>
           </div>
         }

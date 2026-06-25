@@ -271,6 +271,8 @@ function RootComponent() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const initializeStore = useAppStore((s) => s.initializeStore);
+  const state = useRouterState();
+  const isAdminRoute = state.location.pathname.startsWith("/admin");
 
   useEffect(() => {
     initializeStore();
@@ -313,14 +315,16 @@ function RootComponent() {
         </div>
 
         {/* Mobile overlay */}
-        {mobileOpen && (
+        {mobileOpen && !isAdminRoute && (
           <div className="fixed inset-0 z-30 bg-slate-900/40 md:hidden" onClick={() => setMobileOpen(false)} />
         )}
-        <div className={`${mobileOpen ? "block" : "hidden"} md:block`}>
-          <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} onClickLink={() => setMobileOpen(false)} />
-        </div>
-        <div className={`flex min-h-screen flex-col transition-all duration-200 ${collapsed ? "md:pl-16" : "md:pl-64"}`}>
-          <MobileBar onOpen={() => setMobileOpen(true)} />
+        {!isAdminRoute && (
+          <div className={`${mobileOpen ? "block" : "hidden"} md:block`}>
+            <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} onClickLink={() => setMobileOpen(false)} />
+          </div>
+        )}
+        <div className={`flex min-h-screen flex-col transition-all duration-200 ${isAdminRoute ? "" : (collapsed ? "md:pl-16" : "md:pl-64")}`}>
+          {!isAdminRoute && <MobileBar onOpen={() => setMobileOpen(true)} />}
           <main className="flex-1 relative z-10">
             <Outlet />
           </main>
