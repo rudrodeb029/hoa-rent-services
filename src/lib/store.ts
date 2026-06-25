@@ -89,9 +89,26 @@ const defaultSettings: PageSettings = {
 const getInitialPayments = (): Payment[] => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem("hoa_rent_payments");
-    if (saved) {
+    if (saved && saved !== "undefined" && saved !== "null") {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .filter((p: any) => p && typeof p === "object" && typeof p.id === "string")
+            .map((p: any) => ({
+              id: p.id,
+              applicationId: p.applicationId || undefined,
+              amount: typeof p.amount === "number" ? p.amount : Number(p.amount) || 0,
+              classification: p.classification || "application_fee",
+              status: p.status || "pending",
+              processor: p.processor || "Stripe_Card",
+              state: p.state || "NY",
+              timestamp: p.timestamp || new Date().toISOString(),
+              tenantName: p.tenantName || undefined,
+              unitAddress: p.unitAddress || undefined,
+              proofImage: p.proofImage || undefined
+            }));
+        }
       } catch (e) {
         console.error("Failed to parse saved payments from localStorage:", e);
       }
@@ -122,9 +139,18 @@ const getInitialPayments = (): Payment[] => {
 const getInitialSettings = (): PageSettings => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem("hoa_rent_settings");
-    if (saved) {
+    if (saved && saved !== "undefined" && saved !== "null") {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          const cleaned: Partial<PageSettings> = {};
+          for (const key of Object.keys(defaultSettings) as Array<keyof PageSettings>) {
+            if (parsed[key] !== null && parsed[key] !== undefined) {
+              cleaned[key] = parsed[key];
+            }
+          }
+          return { ...defaultSettings, ...cleaned };
+        }
       } catch (e) {
         console.error("Failed to parse saved settings from localStorage:", e);
       }
@@ -156,21 +182,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       
       if (!settingsError && settingsData) {
         const newSettings = {
-          appFeeAmount: Number(settingsData.app_fee_amount),
-          appFeeDisclosures: settingsData.app_fee_disclosures,
-          holdingFeeAmount: Number(settingsData.holding_fee_amount),
-          holdingReservationDays: Number(settingsData.holding_reservation_days),
-          holdingLandlordName: settingsData.holding_landlord_name,
-          leaseLandlordName: settingsData.lease_landlord_name,
-          leaseLandlordAddress: settingsData.lease_landlord_address,
-          leaseLandlordEmail: settingsData.lease_landlord_email,
-          leaseFurnishedStatus: settingsData.lease_furnished_status,
-          leasePetPolicy: settingsData.lease_pet_policy,
-          securityBankName: settingsData.security_bank_name,
-          securityBankAddress: settingsData.security_bank_address,
-          securityCustomApr: Number(settingsData.security_custom_apr),
-          rentGraceDays: Number(settingsData.rent_grace_days),
-          rentLateFeePercent: Number(settingsData.rent_late_fee_percent),
+          appFeeAmount: Number(settingsData.app_fee_amount) || defaultSettings.appFeeAmount,
+          appFeeDisclosures: settingsData.app_fee_disclosures || defaultSettings.appFeeDisclosures,
+          holdingFeeAmount: Number(settingsData.holding_fee_amount) || defaultSettings.holdingFeeAmount,
+          holdingReservationDays: Number(settingsData.holding_reservation_days) || defaultSettings.holdingReservationDays,
+          holdingLandlordName: settingsData.holding_landlord_name || defaultSettings.holdingLandlordName,
+          leaseLandlordName: settingsData.lease_landlord_name || defaultSettings.leaseLandlordName,
+          leaseLandlordAddress: settingsData.lease_landlord_address || defaultSettings.leaseLandlordAddress,
+          leaseLandlordEmail: settingsData.lease_landlord_email || defaultSettings.leaseLandlordEmail,
+          leaseFurnishedStatus: settingsData.lease_furnished_status || defaultSettings.leaseFurnishedStatus,
+          leasePetPolicy: settingsData.lease_pet_policy || defaultSettings.leasePetPolicy,
+          securityBankName: settingsData.security_bank_name || defaultSettings.securityBankName,
+          securityBankAddress: settingsData.security_bank_address || defaultSettings.securityBankAddress,
+          securityCustomApr: settingsData.security_custom_apr !== null && settingsData.security_custom_apr !== undefined ? Number(settingsData.security_custom_apr) : defaultSettings.securityCustomApr,
+          rentGraceDays: settingsData.rent_grace_days !== null && settingsData.rent_grace_days !== undefined ? Number(settingsData.rent_grace_days) : defaultSettings.rentGraceDays,
+          rentLateFeePercent: settingsData.rent_late_fee_percent !== null && settingsData.rent_late_fee_percent !== undefined ? Number(settingsData.rent_late_fee_percent) : defaultSettings.rentLateFeePercent,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -185,19 +211,21 @@ export const useAppStore = create<AppState>((set, get) => ({
         .order("timestamp", { ascending: false });
 
       if (!paymentsError && paymentsData && paymentsData.length > 0) {
-        const mapped = paymentsData.map((p: any) => ({
-          id: p.id,
-          applicationId: p.application_id || undefined,
-          amount: Number(p.amount),
-          classification: p.classification,
-          status: p.status,
-          processor: p.processor,
-          state: p.state,
-          timestamp: p.timestamp,
-          tenantName: p.tenant_name || undefined,
-          unitAddress: p.unit_address || undefined,
-          proofImage: p.proof_image || undefined
-        }));
+        const mapped = paymentsData
+          .filter((p: any) => p && p.id)
+          .map((p: any) => ({
+            id: p.id,
+            applicationId: p.application_id || undefined,
+            amount: typeof p.amount === "number" ? p.amount : Number(p.amount) || 0,
+            classification: p.classification || "application_fee",
+            status: p.status || "pending",
+            processor: p.processor || "Stripe_Card",
+            state: p.state || "NY",
+            timestamp: p.timestamp || new Date().toISOString(),
+            tenantName: p.tenant_name || undefined,
+            unitAddress: p.unit_address || undefined,
+            proofImage: p.proof_image || undefined
+          }));
         set({ payments: mapped });
         if (typeof window !== "undefined") {
           localStorage.setItem("hoa_rent_payments", JSON.stringify(mapped));
@@ -207,35 +235,39 @@ export const useAppStore = create<AppState>((set, get) => ({
       // 3. Fetch Users, Properties, Units (fallback to seed arrays if empty)
       const { data: usersData } = await supabase.from("users").select("*");
       if (usersData && usersData.length > 0) {
-        set({ users: usersData });
+        set({ users: usersData.filter((u: any) => u && u.id) });
       }
 
       const { data: propsData } = await supabase.from("properties").select("*");
       if (propsData && propsData.length > 0) {
         set({
-          properties: propsData.map((pr: any) => ({
-            id: pr.id,
-            name: pr.name,
-            street: pr.street,
-            city: pr.city,
-            state: pr.state,
-            zip: pr.zip
-          }))
+          properties: propsData
+            .filter((pr: any) => pr && pr.id)
+            .map((pr: any) => ({
+              id: pr.id,
+              name: pr.name || "Default Property",
+              street: pr.street || "",
+              city: pr.city || "",
+              state: pr.state || "NY",
+              zip: pr.zip || ""
+            }))
         });
       }
 
       const { data: unitsData } = await supabase.from("units").select("*");
       if (unitsData && unitsData.length > 0) {
         set({
-          units: unitsData.map((u: any) => ({
-            id: u.id,
-            propertyId: u.property_id,
-            unitNumber: u.unit_number,
-            baseRent: Number(u.base_rent),
-            bedrooms: Number(u.bedrooms),
-            bathrooms: Number(u.bathrooms),
-            available: u.available
-          }))
+          units: unitsData
+            .filter((u: any) => u && u.id && u.property_id)
+            .map((u: any) => ({
+              id: u.id,
+              propertyId: u.property_id,
+              unitNumber: u.unit_number || "",
+              baseRent: Number(u.base_rent) || 0,
+              bedrooms: Number(u.bedrooms) || 0,
+              bathrooms: Number(u.bathrooms) || 0,
+              available: !!u.available
+            }))
         });
       }
 
@@ -257,21 +289,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       
       if (!settingsError && settingsData) {
         const newSettings = {
-          appFeeAmount: Number(settingsData.app_fee_amount),
-          appFeeDisclosures: settingsData.app_fee_disclosures,
-          holdingFeeAmount: Number(settingsData.holding_fee_amount),
-          holdingReservationDays: Number(settingsData.holding_reservation_days),
-          holdingLandlordName: settingsData.holding_landlord_name,
-          leaseLandlordName: settingsData.lease_landlord_name,
-          leaseLandlordAddress: settingsData.lease_landlord_address,
-          leaseLandlordEmail: settingsData.lease_landlord_email,
-          leaseFurnishedStatus: settingsData.lease_furnished_status,
-          leasePetPolicy: settingsData.lease_pet_policy,
-          securityBankName: settingsData.security_bank_name,
-          securityBankAddress: settingsData.security_bank_address,
-          securityCustomApr: Number(settingsData.security_custom_apr),
-          rentGraceDays: Number(settingsData.rent_grace_days),
-          rentLateFeePercent: Number(settingsData.rent_late_fee_percent),
+          appFeeAmount: Number(settingsData.app_fee_amount) || defaultSettings.appFeeAmount,
+          appFeeDisclosures: settingsData.app_fee_disclosures || defaultSettings.appFeeDisclosures,
+          holdingFeeAmount: Number(settingsData.holding_fee_amount) || defaultSettings.holdingFeeAmount,
+          holdingReservationDays: Number(settingsData.holding_reservation_days) || defaultSettings.holdingReservationDays,
+          holdingLandlordName: settingsData.holding_landlord_name || defaultSettings.holdingLandlordName,
+          leaseLandlordName: settingsData.lease_landlord_name || defaultSettings.leaseLandlordName,
+          leaseLandlordAddress: settingsData.lease_landlord_address || defaultSettings.leaseLandlordAddress,
+          leaseLandlordEmail: settingsData.lease_landlord_email || defaultSettings.leaseLandlordEmail,
+          leaseFurnishedStatus: settingsData.lease_furnished_status || defaultSettings.leaseFurnishedStatus,
+          leasePetPolicy: settingsData.lease_pet_policy || defaultSettings.leasePetPolicy,
+          securityBankName: settingsData.security_bank_name || defaultSettings.securityBankName,
+          securityBankAddress: settingsData.security_bank_address || defaultSettings.securityBankAddress,
+          securityCustomApr: settingsData.security_custom_apr !== null && settingsData.security_custom_apr !== undefined ? Number(settingsData.security_custom_apr) : defaultSettings.securityCustomApr,
+          rentGraceDays: settingsData.rent_grace_days !== null && settingsData.rent_grace_days !== undefined ? Number(settingsData.rent_grace_days) : defaultSettings.rentGraceDays,
+          rentLateFeePercent: settingsData.rent_late_fee_percent !== null && settingsData.rent_late_fee_percent !== undefined ? Number(settingsData.rent_late_fee_percent) : defaultSettings.rentLateFeePercent,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -286,19 +318,21 @@ export const useAppStore = create<AppState>((set, get) => ({
         .order("timestamp", { ascending: false });
 
       if (!paymentsError && paymentsData && paymentsData.length > 0) {
-        const mapped = paymentsData.map((p: any) => ({
-          id: p.id,
-          applicationId: p.application_id || undefined,
-          amount: Number(p.amount),
-          classification: p.classification,
-          status: p.status,
-          processor: p.processor,
-          state: p.state,
-          timestamp: p.timestamp,
-          tenantName: p.tenant_name || undefined,
-          unitAddress: p.unit_address || undefined,
-          proofImage: p.proof_image || undefined
-        }));
+        const mapped = paymentsData
+          .filter((p: any) => p && p.id)
+          .map((p: any) => ({
+            id: p.id,
+            applicationId: p.application_id || undefined,
+            amount: typeof p.amount === "number" ? p.amount : Number(p.amount) || 0,
+            classification: p.classification || "application_fee",
+            status: p.status || "pending",
+            processor: p.processor || "Stripe_Card",
+            state: p.state || "NY",
+            timestamp: p.timestamp || new Date().toISOString(),
+            tenantName: p.tenant_name || undefined,
+            unitAddress: p.unit_address || undefined,
+            proofImage: p.proof_image || undefined
+          }));
         set({ payments: mapped });
         if (typeof window !== "undefined") {
           localStorage.setItem("hoa_rent_payments", JSON.stringify(mapped));

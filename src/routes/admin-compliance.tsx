@@ -359,19 +359,29 @@ function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {payments.map((p) => (
-                <tr key={p.id} className="border-b border-slate-50 last:border-0">
-                  <td className="py-2.5 pr-4 font-mono text-xs text-slate-500">{p.id.slice(0, 8)}</td>
-                  <td className="py-2.5 pr-4"><Pill tone="slate">{p.state}</Pill></td>
-                  <td className="py-2.5 pr-4 text-xs text-slate-600">{new Date(p.timestamp).toLocaleString()}</td>
-                  <td className="py-2.5 pr-4 text-slate-700">{p.processor.replace("_", " ")}</td>
-                  <td className="py-2.5 pr-4 capitalize text-slate-700">{p.classification.replace("_", " ")}</td>
-                  <td className="py-2.5 pr-4 text-right font-medium text-slate-900">${p.amount.toFixed(2)}</td>
-                  <td className="py-2.5 pr-4">
-                    <Pill tone={p.status === "completed" ? "emerald" : p.status === "held" ? "amber" : p.status === "failed" ? "red" : "slate"}>{p.status}</Pill>
-                  </td>
-                </tr>
-              ))}
+               {payments.map((p) => {
+                if (!p) return null;
+                const id = p.id || "";
+                const state = p.state || "NY";
+                const timestamp = p.timestamp || new Date().toISOString();
+                const processor = p.processor || "";
+                const classification = p.classification || "application_fee";
+                const amount = p.amount || 0;
+                const status = p.status || "pending";
+                return (
+                  <tr key={id} className="border-b border-slate-50 last:border-0">
+                    <td className="py-2.5 pr-4 font-mono text-xs text-slate-500">{id.slice(0, 8)}</td>
+                    <td className="py-2.5 pr-4"><Pill tone="slate">{state}</Pill></td>
+                    <td className="py-2.5 pr-4 text-xs text-slate-600">{new Date(timestamp).toLocaleString()}</td>
+                    <td className="py-2.5 pr-4 text-slate-700">{processor.replace("_", " ")}</td>
+                    <td className="py-2.5 pr-4 capitalize text-slate-700">{classification.replace("_", " ")}</td>
+                    <td className="py-2.5 pr-4 text-right font-medium text-slate-900">${amount.toFixed(2)}</td>
+                    <td className="py-2.5 pr-4">
+                      <Pill tone={status === "completed" ? "emerald" : status === "held" ? "amber" : status === "failed" ? "red" : "slate"}>{status}</Pill>
+                    </td>
+                  </tr>
+                );
+              })}
               {payments.length === 0 && (
                 <tr><td colSpan={7} className="py-8 text-center text-sm text-slate-500">No transactions yet — complete a flow in any tab to populate the ledger.</td></tr>
               )}
