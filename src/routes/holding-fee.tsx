@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Download, AlertTriangle, FileSignature, CreditCard, ClipboardCheck, Loader2, ShieldCheck, CheckCircle2, Check, Copy } from "lucide-react";
 import { Banner } from "@/components/compliance/Banner";
 import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Textarea } from "@/components/shared/Primitives";
@@ -23,6 +23,9 @@ const STEPS = ["Reservation Details", "Our Agreement", "Secure Reservation", "Co
 function HoldingPage() {
   const activeState = useAppStore((s) => s.activeState);
   const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
+
   const [step, setStep] = useState(0);
   const [unit, setUnit] = useState("");
   const [start, setStart] = useState("");
@@ -30,7 +33,14 @@ function HoldingPage() {
   const [terms, setTerms] = useState("");
   const [name, setName] = useState("");
   const [typedSig, setTypedSig] = useState("");
-  const [amount, setAmount] = useState(0);
+  
+  // Set default holding fee from admin page settings
+  const [amount, setAmount] = useState(pageSettings.holdingFeeAmount);
+  
+  useEffect(() => {
+    setAmount(pageSettings.holdingFeeAmount);
+  }, [pageSettings.holdingFeeAmount]);
+
   const [authorized, setAuthorized] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
 
@@ -41,6 +51,29 @@ function HoldingPage() {
   const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [processor, setProcessor] = useState<string | null>(null);
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+
+  const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
+  useEffect(() => {
+    if (pendingPayment && pendingPayment.status === "completed") {
+      setPaymentStatus("confirmed");
+      setAuthorized(true);
+      setVerificationLogs((prev) => [
+        ...prev,
+        "Payment verified & accepted by Administrator!",
+        "Holding fee escrow is active.",
+      ]);
+      const formattedProcessor = paymentMethod
+        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+        : "Admin Confirmed Receipt";
+      setProcessor(formattedProcessor);
+    } else if (pendingPayment && pendingPayment.status === "failed") {
+      setPaymentStatus("idle");
+      setVerificationLogs([]);
+      setPendingPaymentId(null);
+      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+    }
+  }, [pendingPayment]);
 
   const signed = typedSig.trim().toLowerCase() === name.trim().toLowerCase() && name.length > 1;
 
@@ -68,21 +101,23 @@ function HoldingPage() {
     }, 3500);
 
     setTimeout(() => {
-      setVerificationLogs(prev => [...prev, "Payment verified successfully! Reservation hold confirmed."]);
-      setPaymentStatus("confirmed");
-      setAuthorized(true);
-      const formattedProcessor = paymentMethod 
-        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Verified: ${fileName})` 
-        : `Verified Proof (${fileName})`;
-      setProcessor(formattedProcessor);
-      logPayment({ 
+      setVerificationLogs(prev => [...prev, "Submitting details to HOA Admin Panel for validation..."]);
+    }, 4500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Submitted! Status: PENDING ADMIN APPROVAL.", "The Administrator is reviewing your payment proof in the admin panel."]);
+      const logged = logPayment({ 
         amount, 
         classification: "holding_fee", 
-        status: "held", 
-        processor: (paymentMethod ? `Verified_${paymentMethod.toUpperCase()}` : "Verified_Proof") as any, 
-        state: activeState 
+        status: "pending", 
+        processor: (paymentMethod ? paymentMethod.toUpperCase() : "Uploaded_Screenshot") as any, 
+        state: activeState,
+        tenantName: name || "Avery Tenant",
+        unitAddress: unit ? `Unit ${unit}` : "US Hub",
+        proofImage: fileName
       });
-    }, 5000);
+      setPendingPaymentId(logged.id);
+    }, 6000);
   };
 
   return (

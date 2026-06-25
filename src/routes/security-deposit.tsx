@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Download, Landmark, ShieldCheck, AlertTriangle, CheckCircle2, Loader2, Copy, Check } from "lucide-react";
 import { Banner } from "@/components/compliance/Banner";
 import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Select } from "@/components/shared/Primitives";
@@ -24,15 +24,23 @@ function DepositPage() {
   const activeState = useAppStore((s) => s.activeState);
   const setActiveState = useAppStore((s) => s.setActiveState);
   const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
   const j = JURISDICTIONS[activeState];
 
   const [rent, setRent] = useState(0);
   const [tier, setTier] = useState<string>("full");
   const [tenant, setTenant] = useState("");
   
-  // Default values since we removed Step 2 inputs
-  const [bankName, setBankName] = useState("HOA Rent Services Trust Bank");
-  const [bankAddress, setBankAddress] = useState("120 Wall St, New York, NY");
+  // Default values since we removed Step 2 inputs - initialized from admin config
+  const [bankName, setBankName] = useState(pageSettings.securityBankName);
+  const [bankAddress, setBankAddress] = useState(pageSettings.securityBankAddress);
+  
+  useEffect(() => {
+    setBankName(pageSettings.securityBankName);
+    setBankAddress(pageSettings.securityBankAddress);
+  }, [pageSettings.securityBankName, pageSettings.securityBankAddress]);
+
   const [routing, setRouting] = useState("026009593");
   
   // Payment states matching app-fee page
@@ -43,6 +51,29 @@ function DepositPage() {
   const [copied, setCopied] = useState(false);
   const [processor, setProcessor] = useState<string | null>(null);
   const [funded, setFunded] = useState(false);
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+
+  const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
+  useEffect(() => {
+    if (pendingPayment && pendingPayment.status === "completed") {
+      setPaymentStatus("confirmed");
+      setFunded(true);
+      setVerificationLogs((prev) => [
+        ...prev,
+        "Payment verified & accepted by Administrator!",
+        "Escrow trust account funded successfully.",
+      ]);
+      const formattedProcessor = paymentMethod
+        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+        : "Admin Confirmed Receipt";
+      setProcessor(formattedProcessor);
+    } else if (pendingPayment && pendingPayment.status === "failed") {
+      setPaymentStatus("idle");
+      setVerificationLogs([]);
+      setPendingPaymentId(null);
+      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+    }
+  }, [pendingPayment]);
 
   const tiers = useMemo(() => {
     return [
@@ -55,7 +86,7 @@ function DepositPage() {
 
   const amount = rent * (tier === "half" ? 0.5 : tier === "full" ? 1 : tier === "double" ? 2 : tier === "triple" ? 3 : 1);
   const overCap = isFinite(j.securityDepositCapMonths) && amount > rent * j.securityDepositCapMonths;
-  const apr = effectiveAPR(j);
+  const apr = pageSettings.securityCustomApr !== undefined && pageSettings.securityCustomApr >= 0 ? pageSettings.securityCustomApr : effectiveAPR(j);
   const projectedInterest = amount * apr;
 
   const needsSegregation = j.escrowRequirement.separateAccount;
@@ -84,21 +115,23 @@ function DepositPage() {
     }, 3500);
 
     setTimeout(() => {
-      setVerificationLogs(prev => [...prev, "Payment verified successfully! Escrow deposit confirmed."]);
-      setPaymentStatus("confirmed");
-      setFunded(true);
-      const formattedProcessor = paymentMethod 
-        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Verified: ${fileName})` 
-        : `Verified Proof (${fileName})`;
-      setProcessor(formattedProcessor);
-      logPayment({ 
+      setVerificationLogs(prev => [...prev, "Submitting details to HOA Admin Panel for validation..."]);
+    }, 4500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Submitted! Status: PENDING ADMIN APPROVAL.", "The Administrator is reviewing your payment proof in the admin panel."]);
+      const logged = logPayment({ 
         amount, 
         classification: "security_deposit", 
-        status: "held", 
-        processor: (paymentMethod ? `Verified_${paymentMethod.toUpperCase()}` : "Verified_Proof") as any, 
-        state: activeState 
+        status: "pending", 
+        processor: (paymentMethod ? paymentMethod.toUpperCase() : "Uploaded_Screenshot") as any, 
+        state: activeState,
+        tenantName: tenant || "Avery Tenant",
+        unitAddress: bankName ? `Escrow: ${bankName}` : "US Hub",
+        proofImage: fileName
       });
-    }, 5000);
+      setPendingPaymentId(logged.id);
+    }, 6000);
   };
 
   return (

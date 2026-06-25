@@ -1,8 +1,35 @@
 import { create } from "zustand";
 import type { StateCode } from "./compliance";
-import type { Payment, Property, Unit, User } from "./types";
+import type { Payment, Property, Unit, User, PaymentStatus } from "./types";
 
 const uid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+
+export interface PageSettings {
+  // App Fee
+  appFeeAmount: number;
+  appFeeDisclosures: string;
+  
+  // Holding Fee
+  holdingFeeAmount: number;
+  holdingReservationDays: number;
+  holdingLandlordName: string;
+  
+  // Lease
+  leaseLandlordName: string;
+  leaseLandlordAddress: string;
+  leaseLandlordEmail: string;
+  leaseFurnishedStatus: string;
+  leasePetPolicy: string;
+  
+  // Security Deposit
+  securityBankName: string;
+  securityBankAddress: string;
+  securityCustomApr: number; // e.g. 0.015 for 1.5%
+  
+  // Rent
+  rentGraceDays: number;
+  rentLateFeePercent: number;
+}
 
 interface AppState {
   activeState: StateCode;
@@ -12,6 +39,10 @@ interface AppState {
   properties: Property[];
   units: Unit[];
   payments: Payment[];
+
+  pageSettings: PageSettings;
+  updatePageSettings: (settings: Partial<PageSettings>) => void;
+  updatePaymentStatus: (id: string, status: PaymentStatus) => void;
 
   logPayment: (p: Omit<Payment, "id" | "timestamp">) => Payment;
 }
@@ -32,6 +63,24 @@ const seedUnits: Unit[] = [
   { id: "un_2", propertyId: "p_2", unitNumber: "210", baseRent: 2750, bedrooms: 2, bathrooms: 2, available: true },
 ];
 
+const defaultSettings: PageSettings = {
+  appFeeAmount: 40,
+  appFeeDisclosures: "Regional background check fees are capped by local state landlord-tenant regulations. A refund receipt is generated for your transaction.",
+  holdingFeeAmount: 250,
+  holdingReservationDays: 30,
+  holdingLandlordName: "Morgan Landlord",
+  leaseLandlordName: "LEE SCOTT",
+  leaseLandlordAddress: "174 Schools Dr, Camden, TN",
+  leaseLandlordEmail: "leescott11225@gmail.com",
+  leaseFurnishedStatus: "fully furnished",
+  leasePetPolicy: "No pets allowed",
+  securityBankName: "HOA Rent Services Escrow Bank",
+  securityBankAddress: "100 Trust Way, Suite 400",
+  securityCustomApr: 0.015,
+  rentGraceDays: 5,
+  rentLateFeePercent: 10,
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
   activeState: "NY",
   setActiveState: (s) => set({ activeState: s }),
@@ -39,6 +88,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   users: seedUsers,
   properties: seedProperties,
   units: seedUnits,
+  pageSettings: defaultSettings,
+  
+  updatePageSettings: (settings) => set({
+    pageSettings: { ...get().pageSettings, ...settings }
+  }),
+
+  updatePaymentStatus: (id, status) => set({
+    payments: get().payments.map(p => p.id === id ? { ...p, status } : p)
+  }),
+
   payments: [
     {
       id: "seed-pay-0001",

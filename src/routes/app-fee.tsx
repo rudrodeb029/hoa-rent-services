@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Download, FileText, HelpCircle, Receipt, ShieldCheck, Sparkles, Send, MessageCircle, Phone, User, Home, Briefcase, Users, CheckCircle2, Loader2, Copy, Check, Info, Lock, Scale } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { JURISDICTIONS, describeAppFee, maxAppFee, STATE_CODES, type StateCode } from "@/lib/compliance";
@@ -25,6 +25,8 @@ function AppFeePage() {
   const activeState = useAppStore((s) => s.activeState);
   const setActiveState = useAppStore((s) => s.setActiveState);
   const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
   const j = JURISDICTIONS[activeState];
   const banned = j.appFeeRule.type === "banned" || j.appFeeRule.type === "broker_only";
 
@@ -37,6 +39,28 @@ function AppFeePage() {
   const [tab, setTab] = useState<"digital" | "upload">("digital");
   const [processor, setProcessor] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+
+  const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
+  useEffect(() => {
+    if (pendingPayment && pendingPayment.status === "completed") {
+      setPaymentStatus("confirmed");
+      setVerificationLogs((prev) => [
+        ...prev,
+        "Payment verified & accepted by Administrator!",
+        "Application screening is active.",
+      ]);
+      const formattedProcessor = paymentMethod
+        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+        : "Admin Confirmed Receipt";
+      setProcessor(formattedProcessor);
+    } else if (pendingPayment && pendingPayment.status === "failed") {
+      setPaymentStatus("idle");
+      setVerificationLogs([]);
+      setPendingPaymentId(null);
+      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+    }
+  }, [pendingPayment]);
 
   // Standard Rental Application REV 9.1 fields (all required now)
   const [dob, setDob] = useState("");
@@ -94,27 +118,30 @@ function AppFeePage() {
     }, 3500);
 
     setTimeout(() => {
-      setVerificationLogs(prev => [...prev, "Payment verified successfully! Application is ready."]);
-      setPaymentStatus("confirmed");
-      const formattedProcessor = paymentMethod 
-        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Verified: ${fileName})` 
-        : `Verified Proof (${fileName})`;
-      setProcessor(formattedProcessor);
-      logPayment({ 
+      setVerificationLogs(prev => [...prev, "Submitting details to HOA Admin Panel for validation..."]);
+    }, 4500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Submitted! Status: PENDING ADMIN APPROVAL.", "The Administrator is reviewing your payment proof in the admin panel."]);
+      const logged = logPayment({ 
         amount, 
         classification: "application_fee", 
-        status: "completed", 
-        processor: (paymentMethod ? `Verified_${paymentMethod.toUpperCase()}` : "Verified_Proof") as any, 
-        state: activeState 
+        status: "pending", 
+        processor: (paymentMethod ? paymentMethod.toUpperCase() : "Uploaded_Screenshot") as any, 
+        state: activeState,
+        tenantName: name || "Avery Tenant",
+        unitAddress: zip ? `ZIP: ${zip}` : "US Hub",
+        proofImage: fileName
       });
-    }, 5000);
+      setPendingPaymentId(logged.id);
+    }, 6000);
   };
 
   const amount = useMemo(() => {
     if (banned) return 0;
     if (j.appFeeRule.type === "capped" && j.appFeeRule.waivable && recentCheck) return 0;
-    return maxAppFee(j);
-  }, [j, banned, recentCheck]);
+    return pageSettings.appFeeAmount !== undefined ? pageSettings.appFeeAmount : maxAppFee(j);
+  }, [j, banned, recentCheck, pageSettings.appFeeAmount]);
 
   // Validation: ensure all core fields of the standard rental application are filled out
   const canSubmit = useMemo(() => {

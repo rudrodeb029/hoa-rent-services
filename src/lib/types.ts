@@ -62,4 +62,7 @@ export interface Payment {
   processor: PaymentProcessor;
   state: StateCode;
   timestamp: string;
+  tenantName?: string;
+  unitAddress?: string;
+  proofImage?: string;
 }

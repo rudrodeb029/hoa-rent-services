@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Plus, Trash2, Wallet, TrendingUp, Repeat, AlertTriangle, CheckCircle2, Loader2, Copy, Check, ShieldCheck } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { Banner } from "@/components/compliance/Banner";
@@ -23,6 +23,8 @@ interface Roommate { id: string; email: string; pct: number; }
 function RentPage() {
   const activeState = useAppStore((s) => s.activeState);
   const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
   const j = JURISDICTIONS[activeState];
 
   const [baseRent, setBaseRent] = useState(3200);
@@ -43,6 +45,28 @@ function RentPage() {
   const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [processor, setProcessor] = useState<string | null>(null);
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+
+  const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
+  useEffect(() => {
+    if (pendingPayment && pendingPayment.status === "completed") {
+      setPaymentStatus("confirmed");
+      setVerificationLogs((prev) => [
+        ...prev,
+        "Payment verified & accepted by Administrator!",
+        "Rent ledger updated.",
+      ]);
+      const formattedProcessor = paymentMethod
+        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+        : "Admin Confirmed Receipt";
+      setProcessor(formattedProcessor);
+    } else if (pendingPayment && pendingPayment.status === "failed") {
+      setPaymentStatus("idle");
+      setVerificationLogs([]);
+      setPendingPaymentId(null);
+      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+    }
+  }, [pendingPayment]);
 
   const total = baseRent + utilities;
   const totalPct = roommates.reduce((s, r) => s + r.pct, 0);
@@ -58,12 +82,15 @@ function RentPage() {
     setNewEmail("");
   };
 
-  const lateFee = useMemo(() => {
-    if (daysLate <= j.lateFeeGraceDays) return 0;
-    return Math.min(baseRent * 0.05, 50 + (daysLate - j.lateFeeGraceDays) * 5);
-  }, [daysLate, j.lateFeeGraceDays, baseRent]);
+  const graceDays = pageSettings.rentGraceDays !== undefined ? pageSettings.rentGraceDays : j.lateFeeGraceDays;
 
-  const inGrace = daysLate <= j.lateFeeGraceDays;
+  const lateFee = useMemo(() => {
+    if (daysLate <= graceDays) return 0;
+    const rate = (pageSettings.rentLateFeePercent !== undefined ? pageSettings.rentLateFeePercent : 5) / 100;
+    return Math.min(baseRent * rate, 50 + (daysLate - graceDays) * 5);
+  }, [daysLate, graceDays, baseRent, pageSettings.rentLateFeePercent]);
+
+  const inGrace = daysLate <= graceDays;
 
   const roommateChartData = useMemo(() => {
     const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"];
@@ -92,20 +119,23 @@ function RentPage() {
     }, 3500);
 
     setTimeout(() => {
-      setVerificationLogs(prev => [...prev, "Payment verified successfully! Statement settled."]);
-      setPaymentStatus("confirmed");
-      const formattedProcessor = paymentMethod 
-        ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Verified: ${fileName})` 
-        : `Verified Proof (${fileName})`;
-      setProcessor(formattedProcessor);
-      logPayment({ 
+      setVerificationLogs(prev => [...prev, "Submitting details to HOA Admin Panel for validation..."]);
+    }, 4500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Submitted! Status: PENDING ADMIN APPROVAL.", "The Administrator is reviewing your payment proof in the admin panel."]);
+      const logged = logPayment({ 
         amount: total + lateFee, 
         classification: "rent", 
-        status: "completed", 
-        processor: (paymentMethod ? `Verified_${paymentMethod.toUpperCase()}` : "Verified_Proof") as any, 
-        state: activeState 
+        status: "pending", 
+        processor: (paymentMethod ? paymentMethod.toUpperCase() : "Uploaded_Screenshot") as any, 
+        state: activeState,
+        tenantName: "Avery Tenant",
+        unitAddress: "Hudson Heights, 4B",
+        proofImage: fileName
       });
-    }, 5000);
+      setPendingPaymentId(logged.id);
+    }, 6000);
   };
 
   return (

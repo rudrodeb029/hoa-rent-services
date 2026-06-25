@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Download, FileSignature, BookOpen, CheckCircle2, XCircle, AlertTriangle, Loader2, ShieldCheck, Check, Copy, Info, User, Home, Briefcase, FileText, Sparkles, Receipt } from "lucide-react";
 import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Select, Textarea } from "@/components/shared/Primitives";
 import { downloadHandbook, downloadLease, getLeaseSections } from "@/lib/pdf";
@@ -69,29 +69,38 @@ function LeasePage() {
   const [pets, setPets] = useState("No pets allowed");
   
   // Advanced contract parameters matching current jurisdiction
-  const [agreementDate, setAgreementDate] = useState("");
-  const [landlordName, setLandlordName] = useState("");
-  const [bedrooms, setBedrooms] = useState(0);
-  const [bathrooms, setBathrooms] = useState(0);
-  const [parkingSpaces, setParkingSpaces] = useState(0);
-  const [storageSpaces, setStorageSpaces] = useState("");
-  const [furnishedStatus, setFurnishedStatus] = useState("unfurnished");
-  const [termTotalRent, setTermTotalRent] = useState(0);
-  const [rentDueDay, setRentDueDay] = useState("1st");
-  const [paymentMethod, setPaymentMethod] = useState("Direct Deposit");
-  const [securityDeposit, setSecurityDeposit] = useState(0);
-  const [landlordNoticeAddress, setLandlordNoticeAddress] = useState("");
-  const [landlordNoticeEmail, setLandlordNoticeEmail] = useState("");
-  const [tenantNoticeAddress, setTenantNoticeAddress] = useState("");
-  const [tenantNoticeEmail, setTenantNoticeEmail] = useState("");
+  const [agreementDate, setAgreementDate] = useState("May 21, 2026");
+  const [landlordName, setLandlordName] = useState(pageSettings.leaseLandlordName);
+  const [bedrooms, setBedrooms] = useState(2);
+  const [bathrooms, setBathrooms] = useState(1);
+  const [parkingSpaces, setParkingSpaces] = useState(1);
+  const [storageSpaces, setStorageSpaces] = useState("S-102");
+  const [furnishedStatus, setFurnishedStatus] = useState(pageSettings.leaseFurnishedStatus);
+  const [termTotalRent, setTermTotalRent] = useState(3900);
+  const [rentDueDay, setRentDueDay] = useState("3rd");
+  const [paymentMethod, setPaymentMethod] = useState("Venmo");
+  const [securityDeposit, setSecurityDeposit] = useState(500);
+  const [landlordNoticeAddress, setLandlordNoticeAddress] = useState(pageSettings.leaseLandlordAddress);
+  const [landlordNoticeEmail, setLandlordNoticeEmail] = useState(pageSettings.leaseLandlordEmail);
+  const [tenantNoticeAddress, setTenantNoticeAddress] = useState("174 Schools Dr, Camden, TN");
+  const [tenantNoticeEmail, setTenantNoticeEmail] = useState("lucas.nix06@icloud.com");
   const [governingState, setGoverningState] = useState(j.name);
-  const [disputeCounty, setDisputeCounty] = useState("");
+  const [disputeCounty, setDisputeCounty] = useState("Camden");
+
+  useEffect(() => {
+    setLandlordName(pageSettings.leaseLandlordName);
+    setFurnishedStatus(pageSettings.leaseFurnishedStatus);
+    setLandlordNoticeAddress(pageSettings.leaseLandlordAddress);
+    setLandlordNoticeEmail(pageSettings.leaseLandlordEmail);
+  }, [pageSettings]);
 
   const [signedLeases, setSignedLeases] = useState<SignedLease[]>([]);
   const [builderStep, setBuilderStep] = useState(0);
 
   // wizard step 2 payment options
   const logPayment = useAppStore((s) => s.logPayment);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+  const payments = useAppStore((s) => s.payments);
   const [payGateway, setPayGateway] = useState<"venmo" | "cashapp" | "chime">("venmo");
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "waiting" | "confirmed">("idle");
   const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
@@ -100,6 +109,28 @@ function LeasePage() {
   const [typedSignature, setTypedSignature] = useState("");
   const [copied, setCopied] = useState(false);
   const [processor, setProcessor] = useState("");
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+
+  const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
+  useEffect(() => {
+    if (pendingPayment && pendingPayment.status === "completed") {
+      setPaymentStatus("confirmed");
+      setVerificationLogs((prev) => [
+        ...prev,
+        "Payment verified & accepted by Administrator!",
+        "Security deposit and first month's rent successfully funded.",
+      ]);
+      const formattedProcessor = payGateway
+        ? `${payGateway.charAt(0).toUpperCase() + payGateway.slice(1)} (Admin Confirmed)`
+        : "Admin Confirmed Receipt";
+      setProcessor(formattedProcessor);
+    } else if (pendingPayment && pendingPayment.status === "failed") {
+      setPaymentStatus("idle");
+      setVerificationLogs([]);
+      setPendingPaymentId(null);
+      alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+    }
+  }, [pendingPayment]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -125,20 +156,23 @@ function LeasePage() {
     }, 3500);
 
     setTimeout(() => {
-      setVerificationLogs(prev => [...prev, "Security deposit verified successfully! Lease is now fully funded."]);
-      setPaymentStatus("confirmed");
-      const formattedProcessor = payGateway 
-        ? `${payGateway.charAt(0).toUpperCase() + payGateway.slice(1)} (Verified: ${fileName})` 
-        : `Verified Proof (${fileName})`;
-      setProcessor(formattedProcessor);
-      logPayment({ 
-        amount: securityDeposit || rent || 1000, 
+      setVerificationLogs(prev => [...prev, "Submitting details to HOA Admin Panel for validation..."]);
+    }, 4500);
+
+    setTimeout(() => {
+      setVerificationLogs(prev => [...prev, "Submitted! Status: PENDING ADMIN APPROVAL.", "The Administrator is reviewing your payment proof in the admin panel."]);
+      const logged = logPayment({ 
+        amount: (securityDeposit + (rent || 0)) || 1000, 
         classification: "security_deposit", 
-        status: "held", 
-        processor: (payGateway ? `Verified_${payGateway.toUpperCase()}` : "Verified_Proof") as any, 
-        state: activeState 
+        status: "pending", 
+        processor: (payGateway ? payGateway.toUpperCase() : "Uploaded_Screenshot") as any, 
+        state: activeState,
+        tenantName: tenant || "Avery Tenant",
+        unitAddress: unit || "US Hub",
+        proofImage: fileName
       });
-    }, 5000);
+      setPendingPaymentId(logged.id);
+    }, 6000);
   };
 
   // Calculate difference in months and auto-calculate term total rent

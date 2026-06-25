@@ -18,6 +18,7 @@ import {
   Wallet,
   Menu,
   ChevronLeft,
+  Settings,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -33,6 +34,7 @@ const NAV = [
   { to: "/security-deposit", label: "Security Deposit", icon: ShieldCheck },
   { to: "/rent-ledger", label: "Rent & Roommates", icon: Wallet },
   { to: "/admin-compliance", label: "Admin Compliance", icon: Building2 },
+  { to: "/admin-panel", label: "Admin Panel", icon: Settings },
 ] as const;
 
 function NotFoundComponent() {
