@@ -14,8 +14,8 @@ import { Route as RentLedgerRouteImport } from './routes/rent-ledger'
 import { Route as LeaseSigningRouteImport } from './routes/lease-signing'
 import { Route as HoldingFeeRouteImport } from './routes/holding-fee'
 import { Route as AppFeeRouteImport } from './routes/app-fee'
-import { Route as AdminPanelRouteImport } from './routes/admin-panel'
 import { Route as AdminComplianceRouteImport } from './routes/admin-compliance'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SecurityDepositRoute = SecurityDepositRouteImport.update({
@@ -43,14 +43,14 @@ const AppFeeRoute = AppFeeRouteImport.update({
   path: '/app-fee',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPanelRoute = AdminPanelRouteImport.update({
-  id: '/admin-panel',
-  path: '/admin-panel',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminComplianceRoute = AdminComplianceRouteImport.update({
   id: '/admin-compliance',
   path: '/admin-compliance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,8 +61,8 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/admin-compliance': typeof AdminComplianceRoute
-  '/admin-panel': typeof AdminPanelRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
   '/lease-signing': typeof LeaseSigningRoute
@@ -71,8 +71,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/admin-compliance': typeof AdminComplianceRoute
-  '/admin-panel': typeof AdminPanelRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
   '/lease-signing': typeof LeaseSigningRoute
@@ -82,8 +82,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/admin-compliance': typeof AdminComplianceRoute
-  '/admin-panel': typeof AdminPanelRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
   '/lease-signing': typeof LeaseSigningRoute
@@ -94,8 +94,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/admin-compliance'
-    | '/admin-panel'
     | '/app-fee'
     | '/holding-fee'
     | '/lease-signing'
@@ -104,8 +104,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/admin-compliance'
-    | '/admin-panel'
     | '/app-fee'
     | '/holding-fee'
     | '/lease-signing'
@@ -114,8 +114,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/admin-compliance'
-    | '/admin-panel'
     | '/app-fee'
     | '/holding-fee'
     | '/lease-signing'
@@ -125,8 +125,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AdminComplianceRoute: typeof AdminComplianceRoute
-  AdminPanelRoute: typeof AdminPanelRoute
   AppFeeRoute: typeof AppFeeRoute
   HoldingFeeRoute: typeof HoldingFeeRoute
   LeaseSigningRoute: typeof LeaseSigningRoute
@@ -171,18 +171,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFeeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin-panel': {
-      id: '/admin-panel'
-      path: '/admin-panel'
-      fullPath: '/admin-panel'
-      preLoaderRoute: typeof AdminPanelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin-compliance': {
       id: '/admin-compliance'
       path: '/admin-compliance'
       fullPath: '/admin-compliance'
       preLoaderRoute: typeof AdminComplianceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -197,8 +197,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AdminComplianceRoute: AdminComplianceRoute,
-  AdminPanelRoute: AdminPanelRoute,
   AppFeeRoute: AppFeeRoute,
   HoldingFeeRoute: HoldingFeeRoute,
   LeaseSigningRoute: LeaseSigningRoute,

@@ -17,18 +17,22 @@ import {
   ArrowRight,
   ShieldCheck,
   UserCheck,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Receipt,
+  ClipboardCheck,
+  FileSignature,
+  Wallet
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { Payment, PaymentStatus } from "@/lib/types";
 import { PageShell, PageHeader, Card, CardHeader, Button, Field, Input, Select, Textarea, Pill } from "@/components/shared/Primitives";
 import { JURISDICTIONS } from "@/lib/compliance";
 
-export const Route = createFileRoute("/admin-panel")({
-  component: AdminPanelPage,
+export const Route = createFileRoute("/admin")({
+  component: AdminPage,
 });
 
-function AdminPanelPage() {
+function AdminPage() {
   const activeState = useAppStore((s) => s.activeState);
   const pageSettings = useAppStore((s) => s.pageSettings);
   const payments = useAppStore((s) => s.payments);
