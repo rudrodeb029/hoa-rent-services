@@ -7,4 +7,41 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase credentials not found in environment variables.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Avoid throwing immediately on import to prevent page/app crashes
+let supabaseClient: any = null;
+try {
+  if (supabaseUrl && supabaseAnonKey) {
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  }
+} catch (e) {
+  console.error("Failed to initialize Supabase client:", e);
+}
+
+const makeMockQuery = (val: any = null) => {
+  const promise = Promise.resolve({ data: val, error: null });
+  const chainObj = {
+    select: () => chainObj,
+    insert: () => chainObj,
+    update: () => chainObj,
+    eq: () => chainObj,
+    order: () => chainObj,
+    single: () => Promise.resolve({ data: val, error: null }),
+    then: (onfulfilled?: any, onrejected?: any) => promise.then(onfulfilled, onrejected),
+    catch: (onrejected?: any) => promise.catch(onrejected),
+    finally: (onfinally?: any) => promise.finally(onfinally),
+  };
+  return chainObj;
+};
+
+export const supabase = supabaseClient || {
+  from: (table: string) => {
+    if (table === "page_settings") return makeMockQuery(null);
+    return makeMockQuery([]);
+  },
+  storage: {
+    from: () => ({
+      upload: () => Promise.resolve({ data: null, error: new Error("Supabase storage not configured") }),
+      getPublicUrl: () => ({ data: { publicUrl: "" } })
+    })
+  }
+};

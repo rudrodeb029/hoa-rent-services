@@ -252,7 +252,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         .select("*")
         .order("timestamp", { ascending: false });
 
-      if (!paymentsError && paymentsData) {
+      if (!paymentsError && paymentsData && paymentsData.length > 0) {
         set({
           payments: paymentsData.map((p: any) => ({
             id: p.id,
