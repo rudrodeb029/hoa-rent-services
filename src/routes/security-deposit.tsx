@@ -5,7 +5,7 @@ import { Banner } from "@/components/compliance/Banner";
 import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Select } from "@/components/shared/Primitives";
 import { useAppStore } from "@/lib/store";
 import { JURISDICTIONS, describeInterest, effectiveAPR, STATE_CODES, type StateCode } from "@/lib/compliance";
-import { EscrowFlowAnimation } from "@/components/shared/EscrowFlowAnimation";
+import { EscrowFlowAnimation, VerificationWaitingPanel } from "@/components/shared/EscrowFlowAnimation";
 import { ProofUpload } from "@/components/shared/ProofUpload";
 import { downloadEscrowDisclosure } from "@/lib/pdf";
 import { Tex } from "@/components/shared/Tex";
@@ -389,25 +389,11 @@ function DepositPage() {
           )}
 
           {paymentStatus === "waiting" && (
-            <div className="text-center py-6 space-y-4 max-w-md mx-auto">
-              <div className="relative inline-flex items-center justify-center">
-                <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
-                <ShieldCheck className="h-5 w-5 text-indigo-400 absolute" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-slate-800">Confirming your payment with care...</h3>
-                <p className="text-xs text-slate-500 mt-1">We are verifying your transaction proof to secure your escrow account right away.</p>
-              </div>
-              {/* Custom Console Log */}
-              <div className="bg-slate-950 text-emerald-400 font-mono text-[10px] text-left p-3.5 rounded-xl h-36 overflow-y-auto space-y-1 shadow-inner border border-slate-800">
-                {verificationLogs.map((log, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <span className="text-slate-600 shrink-0">[{new Date().toLocaleTimeString()}]</span>
-                    <span className="break-all">{log}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <VerificationWaitingPanel
+              logs={verificationLogs}
+              title="Confirming your payment with care..."
+              subtitle="We are verifying your transaction proof to secure your escrow account right away."
+            />
           )}
 
           {paymentStatus === "confirmed" && (
