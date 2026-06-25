@@ -1274,10 +1274,6 @@ function AdminPage() {
                       <span className="text-slate-500 font-semibold">Gateway</span>
                       <span className="text-slate-800 font-bold">{selectedProofPayment.processor}</span>
                     </div>
-                    <div className="flex justify-between pt-2 text-[11px]">
-                      <span className="text-slate-500 font-semibold">Receipt File</span>
-                      <span className="text-indigo-600 font-mono font-bold truncate max-w-xs">{selectedProofPayment.proofImage || "receipt.png"}</span>
-                    </div>
                   </div>
                 </div>
 
