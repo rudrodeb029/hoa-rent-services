@@ -114,33 +114,27 @@ function LeasePage() {
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
     if (pendingPayment && pendingPayment.status === "completed") {
-      setPaymentStatus((currStatus) => {
-        if (currStatus !== "confirmed") {
-          setVerificationLogs((prev) => [
-            ...prev,
-            "Payment verified & accepted by Administrator!",
-            "Security deposit and first month's rent successfully funded.",
-          ]);
-          const formattedProcessor = payGateway
-            ? `${payGateway.charAt(0).toUpperCase() + payGateway.slice(1)} (Admin Confirmed)`
-            : "Admin Confirmed Receipt";
-          setProcessor(formattedProcessor);
-          return "confirmed";
-        }
-        return currStatus;
-      });
+      if (paymentStatus !== "confirmed") {
+        setPaymentStatus("confirmed");
+        setVerificationLogs((prev) => [
+          ...prev,
+          "Payment verified & accepted by Administrator!",
+          "Security deposit and first month's rent successfully funded.",
+        ]);
+        const formattedProcessor = payGateway
+          ? `${payGateway.charAt(0).toUpperCase() + payGateway.slice(1)} (Admin Confirmed)`
+          : "Admin Confirmed Receipt";
+        setProcessor(formattedProcessor);
+      }
     } else if (pendingPayment && pendingPayment.status === "failed") {
-      setPaymentStatus((currStatus) => {
-        if (currStatus !== "idle") {
-          setVerificationLogs([]);
-          setPendingPaymentId(null);
-          alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
-          return "idle";
-        }
-        return currStatus;
-      });
+      if (paymentStatus !== "idle") {
+        setPaymentStatus("idle");
+        setVerificationLogs([]);
+        setPendingPaymentId(null);
+        alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+      }
     }
-  }, [pendingPayment, payGateway]);
+  }, [pendingPayment, payGateway, paymentStatus]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

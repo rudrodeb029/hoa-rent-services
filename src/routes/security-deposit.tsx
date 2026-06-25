@@ -56,34 +56,28 @@ function DepositPage() {
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
     if (pendingPayment && pendingPayment.status === "completed") {
-      setPaymentStatus((currStatus) => {
-        if (currStatus !== "confirmed") {
-          setFunded(true);
-          setVerificationLogs((prev) => [
-            ...prev,
-            "Payment verified & accepted by Administrator!",
-            "Escrow trust account funded successfully.",
-          ]);
-          const formattedProcessor = paymentMethod
-            ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
-            : "Admin Confirmed Receipt";
-          setProcessor(formattedProcessor);
-          return "confirmed";
-        }
-        return currStatus;
-      });
+      if (paymentStatus !== "confirmed") {
+        setFunded(true);
+        setPaymentStatus("confirmed");
+        setVerificationLogs((prev) => [
+          ...prev,
+          "Payment verified & accepted by Administrator!",
+          "Escrow trust account funded successfully.",
+        ]);
+        const formattedProcessor = paymentMethod
+          ? `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} (Admin Confirmed)`
+          : "Admin Confirmed Receipt";
+        setProcessor(formattedProcessor);
+      }
     } else if (pendingPayment && pendingPayment.status === "failed") {
-      setPaymentStatus((currStatus) => {
-        if (currStatus !== "idle") {
-          setVerificationLogs([]);
-          setPendingPaymentId(null);
-          alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
-          return "idle";
-        }
-        return currStatus;
-      });
+      if (paymentStatus !== "idle") {
+        setPaymentStatus("idle");
+        setVerificationLogs([]);
+        setPendingPaymentId(null);
+        alert("Payment proof was rejected by the administrator. Please re-submit your receipt.");
+      }
     }
-  }, [pendingPayment, paymentMethod]);
+  }, [pendingPayment, paymentMethod, paymentStatus]);
 
   const tiers = useMemo(() => {
     return [
