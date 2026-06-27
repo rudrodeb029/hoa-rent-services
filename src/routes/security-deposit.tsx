@@ -380,7 +380,7 @@ function DepositPage() {
                         Adjust monthly rent or deposit tier to stay within compliance limits before paying.
                       </Banner>
                     ) : (
-                      <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                      <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />
                     )}
                   </div>
 

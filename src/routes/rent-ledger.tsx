@@ -275,7 +275,7 @@ function RentPage() {
 
                       {/* Screenshot proof upload */}
                       <div className="border-t border-slate-100 pt-4">
-                        <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                        <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />
                       </div>
                     </div>
                   )}

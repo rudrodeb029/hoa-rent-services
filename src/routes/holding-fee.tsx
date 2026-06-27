@@ -311,7 +311,7 @@ function HoldingPage() {
 
                             {/* Screenshot proof upload */}
                             <div className="border-t border-slate-100 pt-4">
-                              <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                              <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />
                             </div>
                             <div className="border-t border-slate-100 pt-3 mt-3">
                               <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>

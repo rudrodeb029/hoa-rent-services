@@ -274,7 +274,7 @@ function HomeInsurancePage() {
                         </div>
 
                         <div className="border-t border-slate-100 pt-4">
-                          <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                          <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />
                         </div>
 
                         {pageSettings.paymentNote && (

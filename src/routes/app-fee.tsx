@@ -628,7 +628,7 @@ function AppFeePage() {
                     {dlFrontFile ? (
                       <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
                     ) : (
-                      <ProofUpload onComplete={(fname) => setDlFrontFile(fname)} />
+                      <ProofUpload label="Upload driver's license (front)" onComplete={(fname) => setDlFrontFile(fname)} />
                     )}
                   </div>
                   <div className="rounded-xl border border-slate-200 p-4 space-y-3">
@@ -636,7 +636,7 @@ function AppFeePage() {
                     {dlBackFile ? (
                       <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
                     ) : (
-                      <ProofUpload onComplete={(fname) => setDlBackFile(fname)} />
+                      <ProofUpload label="Upload driver's license (back)" onComplete={(fname) => setDlBackFile(fname)} />
                     )}
                   </div>
                   <div className="rounded-xl border border-slate-200 p-4 space-y-3">
@@ -644,7 +644,7 @@ function AppFeePage() {
                     {selfieFile ? (
                       <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
                     ) : (
-                      <ProofUpload onComplete={(fname) => setSelfieFile(fname)} />
+                      <ProofUpload label="Upload selfie photo" onComplete={(fname) => setSelfieFile(fname)} />
                     )}
                   </div>
                 </div>
@@ -793,7 +793,7 @@ function AppFeePage() {
 
                             {/* Screenshot proof upload */}
                             <div className="border-t border-slate-100 pt-4">
-                              <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                              <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />
                             </div>
 
                             <div className="border-t border-slate-100 pt-3 mt-3">

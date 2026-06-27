@@ -4,7 +4,7 @@ import { Upload, FileCheck2, X, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
-export function ProofUpload({ onComplete }: { onComplete: (url: string) => void }) {
+export function ProofUpload({ onComplete, label }: { onComplete: (url: string) => void; label?: string }) {
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +131,7 @@ export function ProofUpload({ onComplete }: { onComplete: (url: string) => void 
       >
         <input {...getInputProps()} />
         <Upload className="h-8 w-8 text-indigo-600" />
-        <div className="mt-3 text-sm font-semibold text-slate-800">Upload your payment screenshots</div>
+        <div className="mt-3 text-sm font-semibold text-slate-800">{label || "Upload your file"}</div>
         <div className="text-xs text-slate-500">PNG, JPG, or PDF up to 10MB</div>
       </div>
       {error && (
