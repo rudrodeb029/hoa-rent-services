@@ -85,6 +85,7 @@ function AdminPage() {
     | "settings_lease"
     | "settings_security"
     | "settings_rent"
+    | "settings_general"
     | "compliance"
   >("dashboard");
   const [selectedProofPayment, setSelectedProofPayment] = useState<Payment | null>(null);
@@ -106,6 +107,12 @@ function AdminPage() {
   const [securityCustomApr, setSecurityCustomApr] = useState(pageSettings.securityCustomApr * 100); // format to percent
   const [rentGraceDays, setRentGraceDays] = useState(pageSettings.rentGraceDays);
   const [rentLateFeePercent, setRentLateFeePercent] = useState(pageSettings.rentLateFeePercent);
+  const [supportWhatsApp, setSupportWhatsApp] = useState(pageSettings.supportWhatsApp);
+  const [supportTelegram, setSupportTelegram] = useState(pageSettings.supportTelegram);
+  const [supportCellPhone, setSupportCellPhone] = useState(pageSettings.supportCellPhone);
+  const [homeInsuranceFee, setHomeInsuranceFee] = useState(pageSettings.homeInsuranceFee);
+  const [homeInsuranceNote, setHomeInsuranceNote] = useState(pageSettings.homeInsuranceNote);
+  const [paymentNote, setPaymentNote] = useState(pageSettings.paymentNote);
 
   const [saveSectionName, setSaveSectionName] = useState<string | null>(null);
   const [complianceState, setComplianceState] = useState<StateCode>(activeState);
@@ -152,6 +159,12 @@ function AdminPage() {
     setSecurityCustomApr(pageSettings.securityCustomApr * 100);
     setRentGraceDays(pageSettings.rentGraceDays);
     setRentLateFeePercent(pageSettings.rentLateFeePercent);
+    setSupportWhatsApp(pageSettings.supportWhatsApp);
+    setSupportTelegram(pageSettings.supportTelegram);
+    setSupportCellPhone(pageSettings.supportCellPhone);
+    setHomeInsuranceFee(pageSettings.homeInsuranceFee);
+    setHomeInsuranceNote(pageSettings.homeInsuranceNote);
+    setPaymentNote(pageSettings.paymentNote);
   }, [pageSettings]);
 
   // Helper to save setting sections
@@ -164,7 +177,7 @@ function AdminPage() {
   };
 
   const handleApprove = (pId: string, classification: string) => {
-    const finalStatus: PaymentStatus = classification === "security_deposit" ? "held" : "completed";
+    const finalStatus: PaymentStatus = (classification === "security_deposit" || classification === "lease_signing") ? "held" : "completed";
     updatePaymentStatus(pId, finalStatus);
     if (selectedProofPayment?.id === pId) {
       setSelectedProofPayment(p => p ? { ...p, status: finalStatus } : null);
@@ -395,6 +408,15 @@ function AdminPage() {
               <Wallet className="h-4 w-4" />
               5. Rent & Roommates
             </button>
+            <button
+              onClick={() => { setActiveSubPage("settings_general"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition cursor-pointer text-left ${
+                activeSubPage === "settings_general" ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              6. General Settings
+            </button>
           </div>
 
           {/* REFERENCE GROUP */}
@@ -452,7 +474,8 @@ function AdminPage() {
                activeSubPage === "settings_holding" ? "Holding Deposit Settings" :
                activeSubPage === "settings_lease" ? "Lease Signing Defaults" :
                activeSubPage === "settings_security" ? "Security Escrow Settings" :
-               activeSubPage === "settings_rent" ? "Rent Ledger Settings" : "State Regulations"}
+               activeSubPage === "settings_rent" ? "Rent Ledger Settings" :
+               activeSubPage === "settings_general" ? "General Settings" : "State Regulations"}
             </h1>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -1077,6 +1100,72 @@ function AdminPage() {
                     onClick={() => handleSaveSection("rent", { 
                       rentGraceDays: Number(rentGraceDays), 
                       rentLateFeePercent: Number(rentLateFeePercent) 
+                    })}
+                    disabled={saveSectionName !== null}
+                    className="px-5 text-xs py-1.5"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {activeSubPage === "settings_general" && (
+            <Card className="max-w-2xl bg-white">
+              <CardHeader title="6. General Settings" icon={<Settings className="h-4.5 w-4.5" />} />
+              <div className="p-5 space-y-6">
+                {/* Support Desk */}
+                <div>
+                  <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Support Desk Contacts</div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Field label="WhatsApp" hint="Support WhatsApp number">
+                      <Input value={supportWhatsApp} onChange={(e) => setSupportWhatsApp(e.target.value)} />
+                    </Field>
+                    <Field label="Telegram" hint="Support Telegram handle">
+                      <Input value={supportTelegram} onChange={(e) => setSupportTelegram(e.target.value)} />
+                    </Field>
+                    <Field label="Cell Phone" hint="Support phone number">
+                      <Input value={supportCellPhone} onChange={(e) => setSupportCellPhone(e.target.value)} />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* Home Insurance */}
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Home Insurance</div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Insurance Fee ($)" hint="Fixed home insurance fee amount.">
+                      <Input type="number" value={homeInsuranceFee} onChange={(e) => setHomeInsuranceFee(Number(e.target.value))} />
+                    </Field>
+                    <Field label="Insurance Note" hint="Note shown to tenants on the insurance page.">
+                      <Textarea value={homeInsuranceNote} onChange={(e) => setHomeInsuranceNote(e.target.value)} rows={2} placeholder="Optional note..." />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* Payment Note */}
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Global Payment Note</div>
+                  <Field label="Payment Note" hint="Shown on all payment pages below the proof upload section.">
+                    <Textarea value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} rows={3} placeholder="Add payment instructions or notes..." />
+                  </Field>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
+                  {saveSectionName === "general" ? (
+                    <span className="text-indigo-600 font-bold text-xs animate-pulse">Saving changes...</span>
+                  ) : (
+                    <span className="text-slate-400 text-xs font-semibold">Configure support and insurance</span>
+                  )}
+                  <Button
+                    onClick={() => handleSaveSection("general", {
+                      supportWhatsApp,
+                      supportTelegram,
+                      supportCellPhone,
+                      homeInsuranceFee: Number(homeInsuranceFee),
+                      homeInsuranceNote,
+                      paymentNote,
                     })}
                     disabled={saveSectionName !== null}
                     className="px-5 text-xs py-1.5"

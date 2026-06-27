@@ -30,6 +30,18 @@ export interface PageSettings {
   // Rent
   rentGraceDays: number;
   rentLateFeePercent: number;
+
+  // Support Desk
+  supportWhatsApp: string;
+  supportTelegram: string;
+  supportCellPhone: string;
+
+  // Home Insurance
+  homeInsuranceFee: number;
+  homeInsuranceNote: string;
+
+  // Payment Note
+  paymentNote: string;
 }
 
 interface AppState {
@@ -71,7 +83,7 @@ const seedUnits: Unit[] = [
 const defaultSettings: PageSettings = {
   appFeeAmount: 40,
   appFeeDisclosures: "Regional background check fees are capped by local state landlord-tenant regulations. A refund receipt is generated for your transaction.",
-  holdingFeeAmount: 250,
+  holdingFeeAmount: 299,
   holdingReservationDays: 30,
   holdingLandlordName: "Morgan Landlord",
   leaseLandlordName: "LEE SCOTT",
@@ -84,6 +96,12 @@ const defaultSettings: PageSettings = {
   securityCustomApr: 0.015,
   rentGraceDays: 5,
   rentLateFeePercent: 10,
+  supportWhatsApp: "+1 (555) 0199",
+  supportTelegram: "@hoarentservices_support",
+  supportCellPhone: "+1 (555) 0100",
+  homeInsuranceFee: 499,
+  homeInsuranceNote: "",
+  paymentNote: "",
 };
 
 const getInitialPayments = (): Payment[] => {
@@ -181,7 +199,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         .single();
       
       if (!settingsError && settingsData) {
-        const newSettings = {
+        const newSettings: PageSettings = {
           appFeeAmount: Number(settingsData.app_fee_amount) || defaultSettings.appFeeAmount,
           appFeeDisclosures: settingsData.app_fee_disclosures || defaultSettings.appFeeDisclosures,
           holdingFeeAmount: Number(settingsData.holding_fee_amount) || defaultSettings.holdingFeeAmount,
@@ -197,6 +215,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           securityCustomApr: settingsData.security_custom_apr !== null && settingsData.security_custom_apr !== undefined ? Number(settingsData.security_custom_apr) : defaultSettings.securityCustomApr,
           rentGraceDays: settingsData.rent_grace_days !== null && settingsData.rent_grace_days !== undefined ? Number(settingsData.rent_grace_days) : defaultSettings.rentGraceDays,
           rentLateFeePercent: settingsData.rent_late_fee_percent !== null && settingsData.rent_late_fee_percent !== undefined ? Number(settingsData.rent_late_fee_percent) : defaultSettings.rentLateFeePercent,
+          supportWhatsApp: (settingsData as any).support_whatsapp || defaultSettings.supportWhatsApp,
+          supportTelegram: (settingsData as any).support_telegram || defaultSettings.supportTelegram,
+          supportCellPhone: (settingsData as any).support_cell_phone || defaultSettings.supportCellPhone,
+          homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : defaultSettings.homeInsuranceFee,
+          homeInsuranceNote: (settingsData as any).home_insurance_note ?? defaultSettings.homeInsuranceNote,
+          paymentNote: (settingsData as any).payment_note ?? defaultSettings.paymentNote,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -288,7 +312,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         .single();
       
       if (!settingsError && settingsData) {
-        const newSettings = {
+        const newSettings: PageSettings = {
           appFeeAmount: Number(settingsData.app_fee_amount) || defaultSettings.appFeeAmount,
           appFeeDisclosures: settingsData.app_fee_disclosures || defaultSettings.appFeeDisclosures,
           holdingFeeAmount: Number(settingsData.holding_fee_amount) || defaultSettings.holdingFeeAmount,
@@ -304,6 +328,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           securityCustomApr: settingsData.security_custom_apr !== null && settingsData.security_custom_apr !== undefined ? Number(settingsData.security_custom_apr) : defaultSettings.securityCustomApr,
           rentGraceDays: settingsData.rent_grace_days !== null && settingsData.rent_grace_days !== undefined ? Number(settingsData.rent_grace_days) : defaultSettings.rentGraceDays,
           rentLateFeePercent: settingsData.rent_late_fee_percent !== null && settingsData.rent_late_fee_percent !== undefined ? Number(settingsData.rent_late_fee_percent) : defaultSettings.rentLateFeePercent,
+          supportWhatsApp: (settingsData as any).support_whatsapp || defaultSettings.supportWhatsApp,
+          supportTelegram: (settingsData as any).support_telegram || defaultSettings.supportTelegram,
+          supportCellPhone: (settingsData as any).support_cell_phone || defaultSettings.supportCellPhone,
+          homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : defaultSettings.homeInsuranceFee,
+          homeInsuranceNote: (settingsData as any).home_insurance_note ?? defaultSettings.homeInsuranceNote,
+          paymentNote: (settingsData as any).payment_note ?? defaultSettings.paymentNote,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -371,7 +401,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         updated_at: new Date().toISOString()
       })
       .eq("id", 1)
-      .then(({ error }) => {
+      .then(({ error }: { error: any }) => {
         if (error) console.error("Error updating page settings in Supabase:", error);
       });
   },
@@ -387,7 +417,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       .from("payments")
       .update({ status })
       .eq("id", id)
-      .then(({ error }) => {
+      .then(({ error }: { error: any }) => {
         if (error) console.error("Error updating payment status in Supabase:", error);
       });
   },
@@ -415,7 +445,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         unit_address: payment.unitAddress || null,
         proof_image: payment.proofImage || null
       })
-      .then(({ error }) => {
+      .then(({ error }: { error: any }) => {
         if (error) console.error("Error inserting payment to Supabase:", error);
       });
 

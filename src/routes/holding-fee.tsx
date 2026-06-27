@@ -80,7 +80,7 @@ function HoldingPage() {
     }
   }, [pendingPayment, paymentMethod, paymentStatus]);
 
-  const signed = typedSig.trim().toLowerCase() === name.trim().toLowerCase() && name.length > 1;
+  const signed = typedSig.trim().length > 0;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -128,7 +128,12 @@ function HoldingPage() {
   return (
     <PageShell>
       <PageHeader title="Reserve Your Home" subtitle="Securely reserve a home while we prepare your lease, with clear agreements built on mutual trust." icon={<ClipboardCheck className="h-5 w-5" />} />
-      <Card className="mb-6">
+      <Card className="mb-6 relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <div className="text-[120px] font-black text-slate-200/[0.04] tracking-widest select-none leading-none text-center">
+            HOA<br/>RENT<br/>SERVICES
+          </div>
+        </div>
         <div className="border-b border-slate-100 p-5"><StepHeader steps={STEPS} current={step} /></div>
         <div className="p-6">
           <StepPanel keyId={step}>
@@ -136,7 +141,11 @@ function HoldingPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
                 <Field label="Unit number"><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. 4B" /></Field>
-                <Field label="Holding amount (USD)"><Input type="number" value={amount || ""} onChange={(e) => setAmount(Number(e.target.value))} placeholder="e.g. 500" /></Field>
+                <Field label="Holding Fee (USD)">
+                  <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800">
+                    ${amount.toFixed(2)} <span className="text-xs font-normal text-slate-500">(fixed fee)</span>
+                  </div>
+                </Field>
                 <Field label="Reservation start"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
                 <Field label="Reservation end"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
                 <Field label="Terms" hint="Free-form reservation terms"><Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="e.g. 12-month lease, first month + security at signing." /></Field>
@@ -158,7 +167,7 @@ function HoldingPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Renter" /></Field>
-                  <Field label="Type your name to sign" hint="Must match exactly"><Input value={typedSig} onChange={(e) => setTypedSig(e.target.value)} /></Field>
+                  <Field label="Type your name to sign" hint="Type your signature"><Input value={typedSig} onChange={(e) => setTypedSig(e.target.value)} /></Field>
                 </div>
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
@@ -236,7 +245,7 @@ function HoldingPage() {
                           <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
                             <div className="flex flex-col sm:flex-row gap-6 items-center">
                               {/* QR Code Scan Container */}
-                              <div className="relative w-36 h-36 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                              <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                                 <div className="scanner-line" />
                                 <QRCodeSVG />
                               </div>
@@ -251,8 +260,8 @@ function HoldingPage() {
                                 <div className="text-sm font-semibold text-slate-800">
                                   Amount Due: <span className="text-indigo-600">${amount.toFixed(2)}</span>
                                 </div>
-                                <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-2 max-w-sm mt-1">
-                                  <span className="font-mono text-xs text-slate-700 truncate select-all">
+                                <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
+                                  <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
                                     {paymentMethod === "venmo" && "@hoarentservices"}
                                     {paymentMethod === "cashapp" && "$hoarentservices"}
                                     {paymentMethod === "chime" && "hoarentservices@chime.com"}
@@ -277,6 +286,12 @@ function HoldingPage() {
                             {/* Screenshot proof upload */}
                             <div className="border-t border-slate-100 pt-4">
                               <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                            </div>
+                            <div className="border-t border-slate-100 pt-3 mt-3">
+                              <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
+                              <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                                {pageSettings.paymentNote || "No additional instructions provided."}
+                              </div>
                             </div>
                           </div>
                         )}

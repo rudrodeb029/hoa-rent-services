@@ -764,7 +764,7 @@ export function downloadRentalApplication(opts: {
   name: string;
   email: string;
   dob: string;
-  ssn: string;
+  ssn?: string;
   driverLicense: string;
   cellPhone: string;
   residenceStreet: string;
@@ -774,6 +774,7 @@ export function downloadRentalApplication(opts: {
   lastRentPaid: string;
   landlordPhone: string;
   employerName: string;
+  companyName?: string;
   occupation: string;
   monthlyGrossPay: string;
   refName: string;

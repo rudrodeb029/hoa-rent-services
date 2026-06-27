@@ -335,7 +335,7 @@ function DepositPage() {
                 <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
                   <div className="flex flex-col sm:flex-row gap-6 items-center">
                     {/* QR Code Scan Container */}
-                    <div className="relative w-36 h-36 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                       <div className="scanner-line" />
                       <QRCodeSVG />
                     </div>
@@ -350,8 +350,8 @@ function DepositPage() {
                       <div className="text-sm font-semibold text-slate-800">
                         Amount Due: <span className="text-indigo-600">${amount.toFixed(2)}</span>
                       </div>
-                      <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-2 max-w-sm mt-1">
-                        <span className="font-mono text-xs text-slate-700 truncate select-all">
+                      <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
+                        <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
                           {paymentMethod === "venmo" && "@hoarentservices"}
                           {paymentMethod === "cashapp" && "$hoarentservices"}
                           {paymentMethod === "chime" && "hoarentservices@chime.com"}
@@ -382,6 +382,13 @@ function DepositPage() {
                     ) : (
                       <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
                     )}
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3 mt-3">
+                    <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
+                    <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                      {pageSettings.paymentNote || "No additional instructions provided."}
+                    </div>
                   </div>
                 </div>
               )}

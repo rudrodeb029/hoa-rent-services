@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SecurityDepositRouteImport } from './routes/security-deposit'
 import { Route as RentLedgerRouteImport } from './routes/rent-ledger'
 import { Route as LeaseSigningRouteImport } from './routes/lease-signing'
+import { Route as HomeInsuranceRouteImport } from './routes/home-insurance'
 import { Route as HoldingFeeRouteImport } from './routes/holding-fee'
 import { Route as AppFeeRouteImport } from './routes/app-fee'
 import { Route as AdminComplianceRouteImport } from './routes/admin-compliance'
@@ -31,6 +32,11 @@ const RentLedgerRoute = RentLedgerRouteImport.update({
 const LeaseSigningRoute = LeaseSigningRouteImport.update({
   id: '/lease-signing',
   path: '/lease-signing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeInsuranceRoute = HomeInsuranceRouteImport.update({
+  id: '/home-insurance',
+  path: '/home-insurance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HoldingFeeRoute = HoldingFeeRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/admin-compliance': typeof AdminComplianceRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
+  '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
   '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/admin-compliance': typeof AdminComplianceRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
+  '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
   '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/admin-compliance': typeof AdminComplianceRoute
   '/app-fee': typeof AppFeeRoute
   '/holding-fee': typeof HoldingFeeRoute
+  '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
   '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/admin-compliance'
     | '/app-fee'
     | '/holding-fee'
+    | '/home-insurance'
     | '/lease-signing'
     | '/rent-ledger'
     | '/security-deposit'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/admin-compliance'
     | '/app-fee'
     | '/holding-fee'
+    | '/home-insurance'
     | '/lease-signing'
     | '/rent-ledger'
     | '/security-deposit'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/admin-compliance'
     | '/app-fee'
     | '/holding-fee'
+    | '/home-insurance'
     | '/lease-signing'
     | '/rent-ledger'
     | '/security-deposit'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   AdminComplianceRoute: typeof AdminComplianceRoute
   AppFeeRoute: typeof AppFeeRoute
   HoldingFeeRoute: typeof HoldingFeeRoute
+  HomeInsuranceRoute: typeof HomeInsuranceRoute
   LeaseSigningRoute: typeof LeaseSigningRoute
   RentLedgerRoute: typeof RentLedgerRoute
   SecurityDepositRoute: typeof SecurityDepositRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/lease-signing'
       fullPath: '/lease-signing'
       preLoaderRoute: typeof LeaseSigningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home-insurance': {
+      id: '/home-insurance'
+      path: '/home-insurance'
+      fullPath: '/home-insurance'
+      preLoaderRoute: typeof HomeInsuranceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/holding-fee': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminComplianceRoute: AdminComplianceRoute,
   AppFeeRoute: AppFeeRoute,
   HoldingFeeRoute: HoldingFeeRoute,
+  HomeInsuranceRoute: HomeInsuranceRoute,
   LeaseSigningRoute: LeaseSigningRoute,
   RentLedgerRoute: RentLedgerRoute,
   SecurityDepositRoute: SecurityDepositRoute,
@@ -208,13 +229,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

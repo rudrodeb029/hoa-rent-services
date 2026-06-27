@@ -15,10 +15,16 @@ import {
   FileSignature,
   Receipt,
   ShieldCheck,
+  Shield,
   Wallet,
   Menu,
   ChevronLeft,
   Settings,
+  X,
+  Gift,
+  DollarSign,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -32,6 +38,7 @@ const NAV = [
   { to: "/holding-fee", label: "Holding Fee", icon: ClipboardCheck },
   { to: "/lease-signing", label: "Lease & Inspection", icon: FileSignature },
   { to: "/security-deposit", label: "Security Deposit", icon: ShieldCheck },
+  { to: "/home-insurance", label: "Home Insurance", icon: Shield },
   { to: "/rent-ledger", label: "Rent & Roommates", icon: Wallet },
   { to: "/admin-compliance", label: "Admin Compliance", icon: Building2 },
 ] as const;
@@ -266,6 +273,151 @@ function MobileBar({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+function SpecialOfferModal() {
+  const [show, setShow] = useState(false);
+  const [offerStep, setOfferStep] = useState<"offer" | "payment" | "complete">("offer");
+  const [rentAmount, setRentAmount] = useState("");
+  const [utilitiesAmount, setUtilitiesAmount] = useState("");
+  const logPayment = useAppStore((s) => s.logPayment);
+  const activeState = useAppStore((s) => s.activeState);
+
+  useEffect(() => {
+    // Show on every visit
+    const timer = setTimeout(() => setShow(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const totalOffer = (parseFloat(rentAmount) || 0) + (parseFloat(utilitiesAmount) || 0);
+  const canProceed = totalOffer > 0;
+
+  const handleComplete = () => {
+    logPayment({
+      amount: totalOffer,
+      classification: "special_offer",
+      status: "pending",
+      processor: "Uploaded_Screenshot",
+      state: activeState,
+      tenantName: "Special Offer Participant",
+      unitAddress: "Advance Payment",
+    });
+    setOfferStep("complete");
+  };
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        {/* Close button */}
+        <button onClick={() => setShow(false)} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 z-10">
+          <X className="h-4 w-4" />
+        </button>
+
+        {offerStep === "offer" && (
+          <>
+            {/* Header gradient */}
+            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-6 text-white text-center">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-3">
+                <Gift className="h-7 w-7" />
+              </div>
+              <h2 className="text-xl font-bold">Special Offer!</h2>
+              <div className="flex items-center justify-center gap-1.5 mt-1">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-sm font-medium text-white/90">Limited Time Promotion</span>
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  Pay your <strong>2nd month's rent + utilities</strong> in advance and receive:
+                </p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2 justify-center text-sm text-emerald-700 font-semibold">
+                    <CheckCircle2 className="h-4 w-4" /> 1 Month FREE Rent
+                  </div>
+                  <div className="flex items-center gap-2 justify-center text-sm text-emerald-700 font-semibold">
+                    <CheckCircle2 className="h-4 w-4" /> FREE Utilities for 1 Month
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Rent Amount ($)</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="number"
+                      value={rentAmount}
+                      onChange={(e) => setRentAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Utilities Amount ($)</label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="number"
+                      value={utilitiesAmount}
+                      onChange={(e) => setUtilitiesAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {canProceed && (
+                <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-3 text-center">
+                  <span className="text-xs text-indigo-600 font-medium">Advance Payment Total:</span>
+                  <div className="text-lg font-bold text-indigo-700">${totalOffer.toFixed(2)}</div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setShow(false)}
+                  className="flex-1 h-10 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+                >
+                  Maybe Later
+                </button>
+                <button
+                  disabled={!canProceed}
+                  onClick={handleComplete}
+                  className="flex-1 h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Accept Offer
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {offerStep === "complete" && (
+          <div className="p-8 text-center space-y-4">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800">Your process is complete.</h3>
+            <p className="text-sm text-slate-500">Thank you for connecting with us.</p>
+            <button
+              onClick={() => setShow(false)}
+              className="mt-4 h-10 w-full rounded-lg bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [collapsed, setCollapsed] = useState(false);
@@ -337,6 +489,9 @@ function RootComponent() {
             <Outlet />
           </main>
         </div>
+
+        {/* Special Offer Popup - appears on every visit */}
+        {!isAdminRoute && <SpecialOfferModal />}
       </div>
     </QueryClientProvider>
   );

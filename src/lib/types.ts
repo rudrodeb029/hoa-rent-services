@@ -49,7 +49,7 @@ export interface EscrowLedger {
   state: StateCode;
 }
 
-export type PaymentClassification = "application_fee" | "holding_fee" | "security_deposit" | "rent";
+export type PaymentClassification = "application_fee" | "holding_fee" | "security_deposit" | "rent" | "home_insurance" | "special_offer";
 export type PaymentProcessor = "Stripe_Card" | "Dwolla_ACH" | "Uploaded_Screenshot" | "Cash_App" | "Venmo" | "Chime";
 export type PaymentStatus = "pending" | "completed" | "failed" | "held";
 

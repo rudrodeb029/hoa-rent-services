@@ -282,9 +282,7 @@ function LeasePage() {
     { label: "Unit Address", met: unit.trim() !== "" },
     { label: "Dates (Start & End)", met: start.trim() !== "" && end.trim() !== "" },
     { label: "Bedrooms & Bathrooms", met: bedrooms > 0 && bathrooms > 0 },
-    { label: "Storage Spaces", met: storageSpaces.trim() !== "" },
-    { label: "Rent Due Day", met: rentDueDay.trim() !== "" },
-    { label: "Monthly & Term Rent", met: rent > 0 && termTotalRent > 0 },
+    { label: "Monthly Rent", met: rent > 0 },
     { label: "Security Deposit", met: securityDeposit >= 0 },
     { label: "Governing State", met: governingState.trim() !== "" },
     { label: "Dispute County", met: disputeCounty.trim() !== "" },
@@ -985,22 +983,7 @@ function LeasePage() {
                         <Field label="Bathrooms"><Input type="number" value={bathrooms || ""} onChange={(e) => setBathrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
                         <Field label="Parking"><Input type="number" value={parkingSpaces || ""} onChange={(e) => setParkingSpaces(Number(e.target.value))} placeholder="e.g. 0" /></Field>
                       </div>
-                      <Field label="Storage spaces"><Input value={storageSpaces} onChange={(e) => setStorageSpaces(e.target.value)} placeholder="e.g. None" /></Field>
-                      <Field label="Furnished status">
-                        <Select value={furnishedStatus} onChange={(e) => setFurnishedStatus(e.target.value)}>
-                          <option value="fully furnished">Fully furnished</option>
-                          <option value="unfurnished">Unfurnished</option>
-                          <option value="partially furnished">Partially furnished</option>
-                        </Select>
-                      </Field>
-                      <Field label="Pet policy">
-                        <Select value={pets} onChange={(e) => setPets(e.target.value)}>
-                          <option value="No pets allowed">No pets allowed</option>
-                          <option value="Cats allowed, no dogs">Cats allowed, no dogs</option>
-                          <option value="Dogs under 30 lbs allowed">Dogs under 30 lbs allowed</option>
-                          <option value="All pets welcome with deposit">All pets welcome with deposit</option>
-                        </Select>
-                      </Field>
+
                     </div>
                   </div>
 
@@ -1012,9 +995,9 @@ function LeasePage() {
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
                       <Field label="Monthly rent"><Input type="number" value={rent || ""} onChange={(e) => setRent(Number(e.target.value))} placeholder="e.g. 1500" /></Field>
-                      <Field label="Term total rent"><Input type="number" value={termTotalRent || ""} onChange={(e) => setTermTotalRent(Number(e.target.value))} placeholder="e.g. 9000" /></Field>
+
                       <Field label="Security deposit"><Input type="number" value={securityDeposit || ""} onChange={(e) => setSecurityDeposit(Number(e.target.value))} placeholder="e.g. 1500" /></Field>
-                      <Field label="Rent due day"><Input value={rentDueDay} onChange={(e) => setRentDueDay(e.target.value)} placeholder="e.g. 1st" /></Field>
+
                       <Field label="Payment method">
                         <Select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                           <option value="Direct Deposit">Direct Deposit</option>
@@ -1206,7 +1189,7 @@ function LeasePage() {
                             <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
                               <div className="flex flex-col sm:flex-row gap-6 items-center">
                                 {/* QR Code scan container */}
-                                <div className="relative w-32 h-32 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                                <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                                   <div className="scanner-line" />
                                   <QRCodeSVG />
                                 </div>
@@ -1220,8 +1203,8 @@ function LeasePage() {
                                   <div className="text-sm font-semibold text-slate-800">
                                     Amount Due: <span className="text-indigo-600">${(securityDeposit + rent).toFixed(2)}</span>
                                   </div>
-                                  <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-2 max-w-sm mt-1">
-                                    <span className="font-mono text-xs text-slate-700 truncate select-all">
+                                  <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
+                                    <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
                                       {payGateway === "venmo" && "@hoarentservices"}
                                       {payGateway === "cashapp" && "$hoarentservices"}
                                       {payGateway === "chime" && "hoarentservices@chime.com"}
@@ -1245,6 +1228,13 @@ function LeasePage() {
 
                               <div className="border-t border-slate-100 pt-4">
                                 <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
+                              </div>
+
+                              <div className="border-t border-slate-100 pt-3 mt-3">
+                                <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
+                                <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                                  {pageSettings.paymentNote || "No additional instructions provided."}
+                                </div>
                               </div>
                             </div>
                           )}

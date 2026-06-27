@@ -20,7 +20,7 @@ export const Route = createFileRoute("/app-fee")({
   component: AppFeePage,
 });
 
-const STEPS = ["About You", "Review & Consent", "Complete Fee", "Receipt & Documents"];
+const STEPS = ["About You", "Review & Consent", "Identity Verification", "Complete Fee", "Receipt & Documents"];
 
 function AppFeePage() {
   const activeState = useAppStore((s) => s.activeState);
@@ -72,7 +72,6 @@ function AppFeePage() {
 
   // Standard Rental Application REV 9.1 fields (all required now)
   const [dob, setDob] = useState("");
-  const [ssn, setSsn] = useState("");
   const [driverLicense, setDriverLicense] = useState("");
   const [cellPhone, setCellPhone] = useState("");
 
@@ -84,8 +83,17 @@ function AppFeePage() {
   const [landlordPhone, setLandlordPhone] = useState("");
 
   const [employerName, setEmployerName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [occupation, setOccupation] = useState("");
   const [monthlyGrossPay, setMonthlyGrossPay] = useState("");
+
+  const [numAdults, setNumAdults] = useState(1);
+  const [numPets, setNumPets] = useState(0);
+
+  const [dlFrontFile, setDlFrontFile] = useState<string | null>(null);
+  const [dlBackFile, setDlBackFile] = useState<string | null>(null);
+  const [selfieFile, setSelfieFile] = useState<string | null>(null);
+  const idVerified = dlFrontFile !== null && dlBackFile !== null && selfieFile !== null;
 
   const [refName, setRefName] = useState("");
   const [refPhone, setRefPhone] = useState("");
@@ -144,9 +152,9 @@ function AppFeePage() {
 
   const amount = useMemo(() => {
     if (banned) return 0;
-    if (j.appFeeRule.type === "capped" && j.appFeeRule.waivable && recentCheck) return 0;
-    return pageSettings.appFeeAmount !== undefined ? pageSettings.appFeeAmount : maxAppFee(j);
-  }, [j, banned, recentCheck, pageSettings.appFeeAmount]);
+    const perAdult = activeState === "NY" ? 29.99 : 99.99;
+    return perAdult * numAdults;
+  }, [banned, activeState, numAdults]);
 
   // Validation: ensure all core fields of the standard rental application are filled out
   const canSubmit = useMemo(() => {
@@ -156,7 +164,6 @@ function AppFeePage() {
       zip.length >= 5 &&
       !banned &&
       dob !== "" &&
-      ssn.trim().length > 0 &&
       driverLicense.trim().length > 0 &&
       cellPhone.trim().length > 0 &&
       residenceStreet.trim().length > 0 &&
@@ -168,7 +175,7 @@ function AppFeePage() {
       monthlyGrossPay.trim().length > 0
     );
   }, [
-    name, email, zip, banned, dob, ssn, driverLicense, cellPhone,
+    name, email, zip, banned, dob, driverLicense, cellPhone,
     residenceStreet, residenceCity, residenceState, residenceZip,
     employerName, occupation, monthlyGrossPay
   ]);
@@ -219,11 +226,16 @@ function AppFeePage() {
 
       <div className="mb-6"><AppFeeBanner state={activeState} /></div>
 
-      <Card className="mb-6">
+      <Card className="mb-6 relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+          <div className="text-[120px] font-black text-slate-200/[0.04] tracking-widest select-none leading-none text-center">
+            HOA<br/>RENT<br/>SERVICES
+          </div>
+        </div>
         <div className="border-b border-slate-100 p-5">
           <StepHeader steps={STEPS} current={step} />
         </div>
-        <div className="p-6">
+        <div className="p-6 relative z-10">
           <StepPanel keyId={step}>
             {step === 0 && (
               <div className="space-y-6">
@@ -233,9 +245,9 @@ function AppFeePage() {
                     <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Basic Information</h3>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Full Legal Name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Renter" /></Field>
-                    <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="alex@example.com" /></Field>
-                    <Field label="ZIP"><Input value={zip} onChange={(e) => setZip(e.target.value)} placeholder="10024" /></Field>
+                    <Field label="Full Legal Name"><Input id="field-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Renter" /></Field>
+                    <Field label="Email"><Input id="field-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="alex@example.com" /></Field>
+                    <Field label="ZIP"><Input id="field-zip" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="10024" /></Field>
                     <Field label="State">
                       <Select value={activeState} onChange={(e) => setActiveState(e.target.value as StateCode)}>
                         {STATE_CODES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -256,14 +268,24 @@ function AppFeePage() {
                 <div className="space-y-6 border-t border-slate-100 pt-6">
                   <div>
                     <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-3">
+                      <Users className="h-4 w-4 text-indigo-600 shrink-0" />
+                      <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Household</h3>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="Number of Adults"><Input type="number" min="1" value={numAdults} onChange={(e) => setNumAdults(Math.max(1, Number(e.target.value)))} /></Field>
+                      <Field label="Number of Pets"><Input type="number" min="0" value={numPets} onChange={(e) => setNumPets(Math.max(0, Number(e.target.value)))} /></Field>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-3">
                       <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Personal Details</h3>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <Field label="Date of Birth"><Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></Field>
-                      <Field label="Social Security #"><Input type="password" placeholder="XXX-XX-XXXX" value={ssn} onChange={(e) => setSsn(e.target.value)} /></Field>
-                      <Field label="Driver's License #"><Input placeholder="DL-12345678" value={driverLicense} onChange={(e) => setDriverLicense(e.target.value)} /></Field>
-                      <Field label="Cell Phone"><Input placeholder="(555) 000-0000" value={cellPhone} onChange={(e) => setCellPhone(e.target.value)} /></Field>
+                      <Field label="Date of Birth"><Input id="field-dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} /></Field>
+                      <Field label="Driver's License #"><Input id="field-dl" placeholder="DL-12345678" value={driverLicense} onChange={(e) => setDriverLicense(e.target.value)} /></Field>
+                      <Field label="Cell Phone"><Input id="field-phone" placeholder="(555) 000-0000" value={cellPhone} onChange={(e) => setCellPhone(e.target.value)} /></Field>
                     </div>
                   </div>
 
@@ -274,12 +296,12 @@ function AppFeePage() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="sm:col-span-2">
-                        <Field label="Street Address"><Input placeholder="123 Main St" value={residenceStreet} onChange={(e) => setResidenceStreet(e.target.value)} /></Field>
+                        <Field label="Street Address"><Input id="field-street" placeholder="123 Main St" value={residenceStreet} onChange={(e) => setResidenceStreet(e.target.value)} /></Field>
                       </div>
-                      <Field label="City"><Input placeholder="New York" value={residenceCity} onChange={(e) => setResidenceCity(e.target.value)} /></Field>
+                      <Field label="City"><Input id="field-city" placeholder="New York" value={residenceCity} onChange={(e) => setResidenceCity(e.target.value)} /></Field>
                       <div className="grid grid-cols-2 gap-2">
-                        <Field label="State"><Input placeholder="NY" value={residenceState} onChange={(e) => setResidenceState(e.target.value)} /></Field>
-                        <Field label="ZIP"><Input placeholder="10001" value={residenceZip} onChange={(e) => setResidenceZip(e.target.value)} /></Field>
+                        <Field label="State"><Input id="field-rstate" placeholder="NY" value={residenceState} onChange={(e) => setResidenceState(e.target.value)} /></Field>
+                        <Field label="ZIP"><Input id="field-rzip" placeholder="10001" value={residenceZip} onChange={(e) => setResidenceZip(e.target.value)} /></Field>
                       </div>
                       <Field label="Last Rent Amount Paid"><Input type="number" placeholder="2500" value={lastRentPaid} onChange={(e) => setLastRentPaid(e.target.value)} /></Field>
                       <Field label="Owner/Manager Phone"><Input placeholder="(555) 999-9999" value={landlordPhone} onChange={(e) => setLandlordPhone(e.target.value)} /></Field>
@@ -292,16 +314,17 @@ function AppFeePage() {
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Work & Earnings</h3>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <Field label="Employer Name"><Input placeholder="Acme Inc" value={employerName} onChange={(e) => setEmployerName(e.target.value)} /></Field>
-                      <Field label="Occupation"><Input placeholder="Software Engineer" value={occupation} onChange={(e) => setOccupation(e.target.value)} /></Field>
-                      <Field label="Monthly Gross Pay ($)"><Input type="number" placeholder="8000" value={monthlyGrossPay} onChange={(e) => setMonthlyGrossPay(e.target.value)} /></Field>
+                      <Field label="Employer Name"><Input id="field-employer" placeholder="Acme Inc" value={employerName} onChange={(e) => setEmployerName(e.target.value)} /></Field>
+                      <Field label="Company Name"><Input placeholder="Acme Corp LLC" value={companyName} onChange={(e) => setCompanyName(e.target.value)} /></Field>
+                      <Field label="Occupation"><Input id="field-occupation" placeholder="Software Engineer" value={occupation} onChange={(e) => setOccupation(e.target.value)} /></Field>
+                      <Field label="Monthly Gross Pay ($)"><Input id="field-pay" type="number" placeholder="8000" value={monthlyGrossPay} onChange={(e) => setMonthlyGrossPay(e.target.value)} /></Field>
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-3">
                       <Users className="h-4 w-4 text-indigo-600 shrink-0" />
-                      <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Personal References</h3>
+                      <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Personal References (Optional)</h3>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <Field label="Name"><Input placeholder="Jane Doe" value={refName} onChange={(e) => setRefName(e.target.value)} /></Field>
@@ -345,7 +368,32 @@ function AppFeePage() {
                 </div>
 
                 <div className="flex justify-end border-t border-slate-100 pt-4">
-                  <Button disabled={!canSubmit} onClick={() => setStep(1)}>Continue</Button>
+                  <Button onClick={() => {
+                    if (!canSubmit) {
+                      const fields = [
+                        { val: name, id: 'field-name' },
+                        { val: email, id: 'field-email' },
+                        { val: zip, id: 'field-zip' },
+                        { val: dob, id: 'field-dob' },
+                        { val: driverLicense, id: 'field-dl' },
+                        { val: cellPhone, id: 'field-phone' },
+                        { val: residenceStreet, id: 'field-street' },
+                        { val: residenceCity, id: 'field-city' },
+                        { val: residenceState, id: 'field-rstate' },
+                        { val: residenceZip, id: 'field-rzip' },
+                        { val: employerName, id: 'field-employer' },
+                        { val: occupation, id: 'field-occupation' },
+                        { val: monthlyGrossPay, id: 'field-pay' },
+                      ];
+                      const missing = fields.find(f => !f.val || (typeof f.val === 'string' && f.val.trim().length === 0));
+                      if (missing) {
+                        const el = document.getElementById(missing.id);
+                        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      }
+                      return;
+                    }
+                    setStep(1);
+                  }}>Continue</Button>
                 </div>
               </div>
             )}
@@ -370,7 +418,7 @@ function AppFeePage() {
                   </div>
                   <div className="mt-3 divide-y divide-slate-200 text-sm">
                     <div className="flex justify-between py-2">
-                      <span>Background screening fee</span>
+                      <span>{numAdults} adult(s) × ${activeState === "NY" ? "29.99" : "99.99"}/adult</span>
                       <span>${amount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between py-2">
@@ -418,12 +466,7 @@ function AppFeePage() {
                           <span className="block font-semibold text-slate-500">Driver's License #</span>
                           <span className="text-slate-800 font-medium">{driverLicense || "—"}</span>
                         </div>
-                        <div>
-                          <span className="block font-semibold text-slate-500">Social Security #</span>
-                          <span className="text-slate-800 font-medium">
-                            {ssn ? `***-**-${ssn.replace(/[-\s]/g, "").slice(-4)}` : "—"}
-                          </span>
-                        </div>
+
                       </div>
                     </div>
 
@@ -471,6 +514,10 @@ function AppFeePage() {
                           <span className="text-slate-800 font-medium">{employerName || "—"}</span>
                         </div>
                         <div>
+                          <span className="block font-semibold text-slate-500">Company Name</span>
+                          <span className="text-slate-800 font-medium">{companyName || "—"}</span>
+                        </div>
+                        <div>
                           <span className="block font-semibold text-slate-500">Occupation</span>
                           <span className="text-slate-800 font-medium">{occupation || "—"}</span>
                         </div>
@@ -491,7 +538,7 @@ function AppFeePage() {
                     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
                       <div className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-bold tracking-wider text-indigo-700">
                         <Users className="h-3.5 w-3.5" />
-                        <span>Your Personal References</span>
+                        <span>Your Personal References (Optional)</span>
                       </div>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                         <div>
@@ -556,6 +603,45 @@ function AppFeePage() {
             )}
 
             {step === 2 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-base font-semibold text-slate-800">Identity Verification</h3>
+                  <p className="text-xs text-slate-500 mt-1">Please upload the following documents to verify your identity before proceeding to payment.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    <div className="text-sm font-semibold text-slate-700">Driver's License (Front)</div>
+                    {dlFrontFile ? (
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
+                    ) : (
+                      <ProofUpload onComplete={(fname) => setDlFrontFile(fname)} />
+                    )}
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    <div className="text-sm font-semibold text-slate-700">Driver's License (Back)</div>
+                    {dlBackFile ? (
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
+                    ) : (
+                      <ProofUpload onComplete={(fname) => setDlBackFile(fname)} />
+                    )}
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    <div className="text-sm font-semibold text-slate-700">Selfie Photo</div>
+                    {selfieFile ? (
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2 rounded-lg"><CheckCircle2 className="h-4 w-4" /> Uploaded</div>
+                    ) : (
+                      <ProofUpload onComplete={(fname) => setSelfieFile(fname)} />
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
+                  <Button disabled={!idVerified} onClick={() => setStep(3)}>Continue to Payment</Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
               <div className="space-y-5">
                 <style dangerouslySetInnerHTML={{__html: `
                   @keyframes scan {
@@ -621,7 +707,7 @@ function AppFeePage() {
                           <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
                             <div className="flex flex-col sm:flex-row gap-6 items-center">
                               {/* QR Code Scan Container */}
-                              <div className="relative w-36 h-36 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                              <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                                 <div className="scanner-line" />
                                 <QRCodeSVG />
                               </div>
@@ -636,8 +722,8 @@ function AppFeePage() {
                                 <div className="text-sm font-semibold text-slate-800">
                                   Amount Due: <span className="text-indigo-600">${amount.toFixed(2)}</span>
                                 </div>
-                                <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-2 max-w-sm mt-1">
-                                  <span className="font-mono text-xs text-slate-700 truncate select-all">
+                                <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
+                                  <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
                                     {paymentMethod === "venmo" && "@hoarentservices"}
                                     {paymentMethod === "cashapp" && "$hoarentservices"}
                                     {paymentMethod === "chime" && "hoarentservices@chime.com"}
@@ -663,6 +749,13 @@ function AppFeePage() {
                             <div className="border-t border-slate-100 pt-4">
                               <ProofUpload onComplete={(fname) => startPaymentVerification(fname)} />
                             </div>
+
+                            <div className="border-t border-slate-100 pt-3 mt-3">
+                              <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
+                              <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                                {pageSettings.paymentNote || "No additional instructions provided."}
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -687,7 +780,7 @@ function AppFeePage() {
                             Thank you! Your screening fee payment of <strong>${amount.toFixed(2)}</strong> is confirmed, and your application is ready to process.
                           </p>
                         </div>
-                        <Button className="w-full" variant="success" onClick={() => setStep(3)}>
+                        <Button className="w-full" variant="success" onClick={() => setStep(4)}>
                           Continue to Receipt & PDF
                         </Button>
                       </div>
@@ -695,13 +788,13 @@ function AppFeePage() {
                   </>
                 )}
                 <div className="flex justify-between">
-                  {paymentStatus === "idle" && <Button variant="ghost" onClick={() => { setPaymentMethod(null); setStep(1); }}>Back</Button>}
-                  {amount === 0 && <Button onClick={() => { setProcessor("Waived"); setStep(3); }}>Generate receipt</Button>}
+                  {paymentStatus === "idle" && <Button variant="ghost" onClick={() => { setPaymentMethod(null); setStep(2); }}>Back</Button>}
+                  {amount === 0 && <Button onClick={() => { setProcessor("Waived"); setStep(4); }}>Generate receipt</Button>}
                 </div>
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <div className="space-y-5">
                 <Banner tone="ok" title="Application fee complete">
                   Your application has been logged with processor <strong>{processor ?? "—"}</strong> for <strong>${amount.toFixed(2)}</strong>.
@@ -722,9 +815,9 @@ function AppFeePage() {
                       <div className="flex items-center gap-2 text-slate-700"><FileText className="h-4 w-4" /><span className="text-sm font-semibold">Download Rental Application</span></div>
                       <p className="mt-1 text-xs text-slate-500">Standard Form REV 9.1 filled with your credentials.</p>
                       <Button className="mt-4 w-full" variant="success" onClick={() => downloadRentalApplication({
-                        name, email, dob, ssn, driverLicense, cellPhone,
+                        name, email, dob, driverLicense, cellPhone,
                         residenceStreet, residenceCity, residenceState, residenceZip, lastRentPaid, landlordPhone,
-                        employerName, occupation, monthlyGrossPay,
+                        employerName, companyName, occupation, monthlyGrossPay,
                         refName, refPhone, refRel,
                         smoke, bankruptcy, felony, eviction
                       })}>
