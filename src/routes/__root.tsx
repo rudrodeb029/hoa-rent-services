@@ -25,6 +25,10 @@ import {
   DollarSign,
   Sparkles,
   CheckCircle2,
+  Headphones,
+  MessageCircle,
+  Send,
+  Phone,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -273,6 +277,91 @@ function MobileBar({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+function LiveSupportFAB() {
+  const [open, setOpen] = useState(false);
+  const pageSettings = useAppStore((s) => s.pageSettings);
+
+  const whatsapp = pageSettings.supportWhatsApp || "+15550199";
+  const telegram = pageSettings.supportTelegram || "@hoarentservices_support";
+  const phone = pageSettings.supportCellPhone || "+15550100";
+
+  const items = [
+    {
+      label: "WhatsApp",
+      href: `https://wa.me/${whatsapp.replace(/\D/g, "")}`,
+      bg: "bg-emerald-500",
+      shadow: "shadow-emerald-500/30",
+      icon: <MessageCircle className="h-5 w-5" />,
+    },
+    {
+      label: "Telegram",
+      href: `https://t.me/${telegram.replace("@", "")}`,
+      bg: "bg-sky-500",
+      shadow: "shadow-sky-500/30",
+      icon: <Send className="h-5 w-5" />,
+    },
+    {
+      label: "Call Us",
+      href: `tel:${phone.replace(/\D/g, "")}`,
+      bg: "bg-violet-500",
+      shadow: "shadow-violet-500/30",
+      icon: <Phone className="h-5 w-5" />,
+    },
+  ];
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-end gap-3">
+      {/* Sub-icons */}
+      {items.map((item, i) => (
+        <a
+          key={item.label}
+          href={item.href}
+          target={item.label !== "Call Us" ? "_blank" : undefined}
+          rel={item.label !== "Call Us" ? "noopener noreferrer" : undefined}
+          className={`group flex items-center gap-2 transition-all duration-300 ease-out ${
+            open
+              ? "translate-y-0 opacity-100 scale-100"
+              : "translate-y-4 opacity-0 scale-75 pointer-events-none"
+          }`}
+          style={{ transitionDelay: open ? `${i * 60}ms` : "0ms" }}
+          onClick={() => setOpen(false)}
+        >
+          {/* Tooltip */}
+          <span className="rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {item.label}
+          </span>
+          {/* Icon button */}
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${item.bg} text-white shadow-lg ${item.shadow} transition-transform hover:scale-110 cursor-pointer`}
+          >
+            {item.icon}
+          </div>
+        </a>
+      ))}
+
+      {/* Main FAB button */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/40 hover:scale-105 cursor-pointer ${
+          open ? "rotate-45" : "rotate-0"
+        }`}
+        aria-label="Live Support"
+      >
+        {open ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <Headphones className="h-6 w-6" />
+        )}
+      </button>
+
+      {/* Pulse ring when closed */}
+      {!open && (
+        <div className="absolute bottom-0 right-0 h-14 w-14 rounded-full bg-indigo-500/20 animate-ping pointer-events-none" />
+      )}
+    </div>
+  );
+}
+
 function SpecialOfferModal() {
   const [show, setShow] = useState(false);
   const [offerStep, setOfferStep] = useState<"offer" | "payment" | "complete">("offer");
@@ -485,6 +574,9 @@ function RootComponent() {
 
         {/* Special Offer Popup - appears on every visit */}
         {!isAdminRoute && <SpecialOfferModal />}
+
+        {/* Floating Live Support Button */}
+        {!isAdminRoute && <LiveSupportFAB />}
       </div>
     </QueryClientProvider>
   );
