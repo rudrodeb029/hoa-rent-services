@@ -229,9 +229,14 @@ function AppFeePage() {
       <div className="mb-6"><AppFeeBanner state={activeState} /></div>
 
       <Card className="mb-6 relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <div className="text-[120px] font-black text-slate-200/[0.04] tracking-widest select-none leading-none text-center">
-            HOA<br/>RENT<br/>SERVICES
+        {/* Large Transparent Background Logo */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+          <svg className="w-[500px] h-[500px] text-indigo-500/[0.06]" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M3 21h18v-2H3v2zm0-4h18v-9l-9-7-9 7v9zm2-2v-5.5l7-5.44 7 5.44V15H5z" />
+            <path d="M7 10h10v1H7zM7 6l5-4 5 4" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+          <div className="absolute bottom-[30%] text-[64px] font-black text-slate-300/[0.05] tracking-[0.3em] select-none leading-none text-center">
+            HOA RENT SERVICES
           </div>
         </div>
         <div className="border-b border-slate-100 p-5">
