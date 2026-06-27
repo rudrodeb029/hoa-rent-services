@@ -183,33 +183,32 @@ function AppFeePage() {
     employerName, occupation, monthlyGrossPay
   ]);
 
-  // Compliance auditing for standard $40.00 form application fee
+  // Compliance auditing for actual calculated application fee
   const auditReport = useMemo(() => {
-    const defaultFormFee = 40.00;
     const limit = maxAppFee(j);
     
     if (banned) {
       return {
         compliant: false,
-        title: `🚨 Non-Compliant Fee ($40.00) — Banned in ${j.name}`,
-        message: `${j.name} landlord-tenant laws prohibit landlords from charging tenant application fees. The standard $40.00 fee from Form REV 9.1 cannot be charged legally. HOA Rent Services has auto-adjusted the charge to $0.00.`,
+        title: `🚨 Application Fee — Banned in ${j.name}`,
+        message: `${j.name} landlord-tenant laws prohibit landlords from charging tenant application fees. HOA Rent Services has auto-adjusted the charge to $0.00.`,
       };
     }
     
-    if (j.appFeeRule.type === "capped" && defaultFormFee > limit) {
+    if (j.appFeeRule.type === "capped" && calculatedAmount > limit) {
       return {
         compliant: false,
-        title: `🚨 Non-Compliant Fee ($40.00) — Capped in ${j.name}`,
-        message: `${j.name} statutory code caps tenant screening fees at $${limit.toFixed(2)}. The standard $40.00 fee from Form REV 9.1 exceeds this cap. HOA Rent Services has automatically adjusted the invoice to the legal limit of $${limit.toFixed(2)}.`,
+        title: `🚨 Non-Compliant Fee ($${calculatedAmount.toFixed(2)}) — Capped in ${j.name}`,
+        message: `${j.name} statutory code caps tenant screening fees at $${limit.toFixed(2)} per adult. The calculated fee of $${calculatedAmount.toFixed(2)} exceeds this cap. HOA Rent Services has automatically adjusted the invoice to the legal limit of $${limit.toFixed(2)}.`,
       };
     }
     
     return {
       compliant: true,
-      title: `✅ Compliant Fee ($40.00) — Approved in ${j.name}`,
-      message: `The $40.00 screening fee is compliant with local limits in ${j.name} (Cap: ${limit ? `$${limit.toFixed(2)}` : "Cost reimbursement limit"}).`,
+      title: `✅ Compliant Fee ($${calculatedAmount.toFixed(2)}) — Approved in ${j.name}`,
+      message: `The $${calculatedAmount.toFixed(2)} screening fee is compliant with local limits in ${j.name} (Cap: ${limit ? `$${limit.toFixed(2)}` : "Cost reimbursement limit"}).`,
     };
-  }, [j, banned]);
+  }, [j, banned, calculatedAmount]);
 
   return (
     <PageShell>

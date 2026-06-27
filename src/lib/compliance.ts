@@ -362,7 +362,7 @@ export const JURISDICTIONS: Record<StateCode, Jurisdiction> = {
   NY: {
     code: "NY",
     name: "New York",
-    appFeeRule: { type: "capped", max: 20, waivable: true },
+    appFeeRule: { type: "capped", max: 29.99, waivable: true },
     securityDepositCapMonths: 1,
     escrowRequirement: { separateAccount: true, unitThreshold: 6, inStateBank: true, commingleAllowed: false },
     interestRate: { type: "bank_minus_fee", fee: 1 },
