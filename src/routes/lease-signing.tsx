@@ -1275,8 +1275,8 @@ function LeasePage() {
                     <FileText className="h-8 w-8" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-800">Lease Executed & Funded!</h3>
-                    <p className="text-xs text-slate-500 mt-1">Both signature verification and the security deposit transaction have been completed successfully. Your copy of the governing state lease and renter handbook are ready.</p>
+                    <h3 className="text-lg font-bold text-slate-800">Your process is complete!</h3>
+                    <p className="text-xs text-slate-500 mt-1">Thank you for connecting with us. Your lease documents and renter handbook are ready for download.</p>
                   </div>
                   
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs divide-y divide-slate-100 text-left">

@@ -327,8 +327,8 @@ function HoldingPage() {
             )}
             {step === 3 && (
               <div className="space-y-5">
-                <Banner tone="ok" title="Your reservation is secured!">
-                  Reservation hold for ${amount.toFixed(2)} is now active for unit {unit}. <Pill tone="emerald">30-day reservation</Pill>
+                <Banner tone="ok" title="Your process is complete">
+                  Thank you for connecting with us. Your reservation is now secured for unit {unit}. <Pill tone="emerald">30-day reservation</Pill>
                 </Banner>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Card>

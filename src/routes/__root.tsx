@@ -372,13 +372,6 @@ function SpecialOfferModal() {
                 </div>
               </div>
 
-              {canProceed && (
-                <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-3 text-center">
-                  <span className="text-xs text-indigo-600 font-medium">Advance Payment Total:</span>
-                  <div className="text-lg font-bold text-indigo-700">${totalOffer.toFixed(2)}</div>
-                </div>
-              )}
-
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setShow(false)}

@@ -297,7 +297,7 @@ function HomeInsurancePage() {
                     <div>
                       <h3 className="text-base font-semibold text-slate-800">Insurance Payment Verified!</h3>
                       <p className="text-xs text-slate-500 mt-1">
-                        Your home insurance fee of <strong>${amount.toFixed(2)}</strong> has been confirmed. Your coverage is now active.
+                        Your home insurance has been confirmed. Your coverage is now active.
                       </p>
                     </div>
                     <Button className="w-full" variant="success" onClick={() => setStep(2)}>
@@ -319,7 +319,7 @@ function HomeInsurancePage() {
                 </div>
 
                 <Banner tone="ok" title="Coverage Confirmed">
-                  Insurance fee of <strong>${amount.toFixed(2)}</strong> has been processed via <strong>{processor ?? "—"}</strong>. Your coverage is active immediately.
+                  Thank you for connecting with us. Your home insurance coverage is active immediately.
                 </Banner>
 
                 <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">

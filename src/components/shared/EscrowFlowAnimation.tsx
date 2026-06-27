@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Landmark, Wallet, ShieldCheck, Loader2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -73,6 +73,26 @@ export function VerificationWaitingPanel({
     { label: "Awaiting Admin Sign-off", desc: "Pending administrator validation and approval" },
   ];
 
+  const [countdown, setCountdown] = useState(120); // 2 minutes = 120 seconds
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (currentStep === 3 && countdown > 0) {
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
+    }
+  }, [currentStep]);
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm text-left">
       {/* Pulse Animation Header */}
@@ -101,6 +121,12 @@ export function VerificationWaitingPanel({
         </div>
         <h3 className="text-base font-bold text-slate-800 font-display">{title}</h3>
         <p className="text-xs text-slate-500 mt-1 max-w-sm">{subtitle}</p>
+        {currentStep === 3 && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <div className="text-2xl font-mono font-bold text-indigo-600 tabular-nums">{formatTime(countdown)}</div>
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">estimated wait</span>
+          </div>
+        )}
       </div>
 
       {/* Visual Steps Stepper */}

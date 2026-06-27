@@ -150,11 +150,14 @@ function AppFeePage() {
     }, 6000);
   };
 
-  const amount = useMemo(() => {
+  const calculatedAmount = useMemo(() => {
     if (banned) return 0;
     const perAdult = activeState === "NY" ? 29.99 : 99.99;
     return perAdult * numAdults;
   }, [banned, activeState, numAdults]);
+
+  const [manualFeeOverride, setManualFeeOverride] = useState<number | null>(null);
+  const amount = manualFeeOverride !== null ? manualFeeOverride : calculatedAmount;
 
   // Validation: ensure all core fields of the standard rental application are filled out
   const canSubmit = useMemo(() => {
@@ -668,6 +671,28 @@ function AppFeePage() {
                           <h3 className="text-sm font-semibold text-slate-800">Choose your preferred payment method</h3>
                           <p className="text-xs text-slate-500 mt-1">Screening Fee: <strong className="text-indigo-600">${amount.toFixed(2)}</strong>. Choose a method below to view QR and details.</p>
                         </div>
+                        <div className="flex items-center justify-center gap-2 mt-2">
+                          <label className="text-xs font-semibold text-slate-600">Adjust Fee:</label>
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={amount}
+                              onChange={(e) => setManualFeeOverride(Math.max(0, Number(e.target.value)))}
+                              className="w-28 h-8 pl-6 pr-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-800 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none"
+                            />
+                          </div>
+                          {manualFeeOverride !== null && (
+                            <button
+                              onClick={() => setManualFeeOverride(null)}
+                              className="text-[10px] text-indigo-600 font-semibold hover:underline cursor-pointer"
+                            >
+                              Reset to ${calculatedAmount.toFixed(2)}
+                            </button>
+                          )}
+                        </div>
                         <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
                           <button
                             onClick={() => setPaymentMethod("venmo")}
@@ -777,7 +802,7 @@ function AppFeePage() {
                         <div>
                           <h3 className="text-base font-semibold text-slate-800">Payment received & verified!</h3>
                           <p className="text-xs text-slate-500 mt-1">
-                            Thank you! Your screening fee payment of <strong>${amount.toFixed(2)}</strong> is confirmed, and your application is ready to process.
+                            Thank you! Your application has been successfully verified and is ready to process.
                           </p>
                         </div>
                         <Button className="w-full" variant="success" onClick={() => setStep(4)}>
@@ -796,8 +821,8 @@ function AppFeePage() {
 
             {step === 4 && (
               <div className="space-y-5">
-                <Banner tone="ok" title="Application fee complete">
-                  Your application has been logged with processor <strong>{processor ?? "—"}</strong> for <strong>${amount.toFixed(2)}</strong>.
+                <Banner tone="ok" title="Your process is complete">
+                  Thank you for connecting with us. Your application has been successfully processed.
                 </Banner>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <Card>
@@ -843,7 +868,7 @@ function AppFeePage() {
                     <div className="grid gap-3 sm:grid-cols-3">
                       {/* WhatsApp */}
                       <a
-                        href="https://wa.me/15550199"
+                        href={`https://wa.me/${(pageSettings.supportWhatsApp || '+15550199').replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/40 p-3.5 transition hover:bg-emerald-50 hover:border-emerald-200 group"
@@ -853,13 +878,13 @@ function AppFeePage() {
                         </div>
                         <div className="min-w-0">
                           <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">WhatsApp</div>
-                          <div className="text-xs font-semibold text-slate-700 truncate">+1 (555) 0199</div>
+                          <div className="text-xs font-semibold text-slate-700 truncate">{pageSettings.supportWhatsApp || '+1 (555) 0199'}</div>
                         </div>
                       </a>
 
                       {/* Telegram */}
                       <a
-                        href="https://t.me/hoarentservices_support"
+                        href={`https://t.me/${(pageSettings.supportTelegram || '@hoarentservices_support').replace('@', '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 rounded-xl border border-sky-100 bg-sky-50/40 p-3.5 transition hover:bg-sky-50 hover:border-sky-200 group"
@@ -869,13 +894,13 @@ function AppFeePage() {
                         </div>
                         <div className="min-w-0">
                           <div className="text-[11px] font-bold uppercase tracking-wider text-sky-800">Telegram</div>
-                          <div className="text-xs font-semibold text-slate-700 truncate">@hoarentservices_support</div>
+                          <div className="text-xs font-semibold text-slate-700 truncate">{pageSettings.supportTelegram || '@hoarentservices_support'}</div>
                         </div>
                       </a>
 
                       {/* Cell Phone */}
                       <a
-                        href="tel:+15550100"
+                        href={`tel:${(pageSettings.supportCellPhone || '+15550100').replace(/\D/g, '')}`}
                         className="flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50/40 p-3.5 transition hover:bg-indigo-50 hover:border-indigo-200 group"
                       >
                         <div className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500 text-white shadow-sm group-hover:scale-105 transition-transform">
@@ -883,7 +908,7 @@ function AppFeePage() {
                         </div>
                         <div className="min-w-0">
                           <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-800">Cell Phone</div>
-                          <div className="text-xs font-semibold text-slate-700 truncate">+1 (555) 0100</div>
+                          <div className="text-xs font-semibold text-slate-700 truncate">{pageSettings.supportCellPhone || '+1 (555) 0100'}</div>
                         </div>
                       </a>
                     </div>

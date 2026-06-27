@@ -412,15 +412,15 @@ function DepositPage() {
                 <div>
                   <h3 className="text-base font-semibold text-slate-800">Payment successfully received & verified!</h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    Thank you! Your deposit payment of <strong>${amount.toFixed(2)}</strong> is confirmed, and your escrow trust account has been funded.
+                    Thank you! Your deposit has been verified and your escrow trust account has been funded.
                   </p>
                 </div>
               </div>
 
               <EscrowFlowAnimation amount={amount} bankName={(processor ?? bankName) || "HOA Rent Services Escrow"} />
 
-              <Banner tone="ok" title="Deposit secured in escrow">
-                <Pill tone="emerald">{processor ?? "Verified Digital Payment"}</Pill> Your trust account is active. You can download your shared transparency disclosure below.
+              <Banner tone="ok" title="Your process is complete">
+                Thank you for connecting with us. Your trust account is active and secured.
               </Banner>
             </div>
           )}
