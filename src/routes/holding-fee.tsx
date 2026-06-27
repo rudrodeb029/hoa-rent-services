@@ -130,12 +130,12 @@ function HoldingPage() {
       <PageHeader title="Reserve Your Home" subtitle="Securely reserve a home while we prepare your lease, with clear agreements built on mutual trust." icon={<ClipboardCheck className="h-5 w-5" />} />
       <Card className="mb-6 relative overflow-hidden">
         {/* Large Transparent Background Logo — Fixed */}
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-          <svg className="w-[500px] h-[500px] text-indigo-500/[0.06]" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+        <div className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-0 overflow-hidden">
+          <svg className="w-[420px] h-[420px] text-indigo-500/[0.06]" viewBox="0 0 24 24" fill="currentColor" stroke="none">
             <path d="M3 21h18v-2H3v2zm0-4h18v-9l-9-7-9 7v9zm2-2v-5.5l7-5.44 7 5.44V15H5z" />
             <path d="M7 10h10v1H7zM7 6l5-4 5 4" fill="none" stroke="currentColor" strokeWidth="0.5" />
           </svg>
-          <div className="absolute bottom-[30%] text-[64px] font-black text-slate-300/[0.05] tracking-[0.3em] select-none leading-none text-center">
+          <div className="mt-2 text-[48px] font-black text-slate-300/[0.06] tracking-[0.25em] select-none leading-none text-center">
             HOA RENT SERVICES
           </div>
         </div>
