@@ -35,12 +35,8 @@ function HoldingPage() {
   const [name, setName] = useState("");
   const [typedSig, setTypedSig] = useState("");
   
-  // Set default holding fee from admin page settings
-  const [amount, setAmount] = useState(pageSettings.holdingFeeAmount);
-  
-  useEffect(() => {
-    setAmount(pageSettings.holdingFeeAmount);
-  }, [pageSettings.holdingFeeAmount]);
+  // Fixed holding fee: $299 for all states (not editable)
+  const amount: number = 299;
 
   const [authorized, setAuthorized] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
