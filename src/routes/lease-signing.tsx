@@ -317,9 +317,7 @@ function LeasePage() {
           <Highlight>{unit || "________"}</Highlight> (the "Premises"). The
           entire property wherein the Premises is located shall be referred to as
           the "Project", inclusive of other residential units, parking areas and
-          common areas. The Premises includes the following storage spaces:{" "}
-          <Highlight>{storageSpaces || "None"}</Highlight>. The Premises is{" "}
-          <Highlight>{furnishedStatus}</Highlight>.
+          common areas.
         </span>
       )
     },
@@ -347,11 +345,10 @@ function LeasePage() {
       title: "Rent",
       content: (
         <span>
-          Tenant will pay Landlord a rent for the Term of{" "}
-          <Highlight>${termTotalRent.toFixed(2)}</Highlight> payable in equal
-          monthly installments of <Highlight>${rent.toFixed(2)}</Highlight>{" "}
-          ("Rent"). Rent will be payable in advance and due on the{" "}
-          <Highlight>{rentDueDay}</Highlight> day of each month during the Term.
+          Tenant will pay Landlord a monthly rent of{" "}
+          <Highlight>${rent.toFixed(2)}</Highlight>{" "}
+          ("Rent"). Rent will be payable in advance and due on the
+          1st day of each month during the Term.
           Rent for any period during the Term which is for less than one month
           will be a pro rata portion of the monthly installment. Rent will be
           paid to Landlord at Landlord's address provided herein (or to such
@@ -461,13 +458,8 @@ function LeasePage() {
         <span>
           The Premises will be occupied only by Tenant and Tenant’s immediate
           family and used only for residential purposes.{" "}
-          {pets !== "No pets allowed" && pets !== "No pets" ? (
-            <span>
-              Approved pets are permitted. Pet policy: <Highlight>{pets}</Highlight>.
-            </span>
-          ) : (
-            "No pets allowed."
-          )}{" "}
+          Tenant will not keep any pets on the Premises without prior written
+          consent of Landlord.{" "}
           Tenant will not engage in any objectionable conduct, including behavior
           which will make the Premises less fit to live in, will cause dangerous,
           hazardous or unsanitary conditions or will interfere with the rights
@@ -619,24 +611,7 @@ function LeasePage() {
         </span>
       )
     },
-    {
-      title: "Pets",
-      content: (
-        <span>
-          Tenant is not allowed to have or keep any pets, even temporarily, on
-          any part of the Premises, except for the following:{" "}
-          <Highlight>{pets}</Highlight>. The unauthorized presence of any pet
-          will subject Tenant to penalties, damages, deductions and/or
-          termination of this Agreement. Properly trained service animals that
-          provide assistance to individuals with disabilities may be permitted on
-          the Premises with the prior written consent of Landlord, which shall not
-          be unreasonably withheld. Tenant will be responsible for the costs of
-          de-fleaing, deodorizing and/or shampooing all or any portion of the
-          Premises if a pet has been on the Premises at any time during the Term
-          (whether with or without written consent of Landlord).
-        </span>
-      )
-    },
+
     {
       title: "Fire and Casualty",
       content: (
