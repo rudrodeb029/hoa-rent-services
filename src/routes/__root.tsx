@@ -309,41 +309,57 @@ function LiveSupportFAB() {
     },
   ];
 
+  // Radial positions: fan out in a quarter-circle arc (upward-left from bottom-right)
+  // Angles: 180° (left), 135° (upper-left), 90° (up)
+  const radius = 72; // distance from center
+  const angles = [180, 135, 90]; // degrees
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-end gap-3">
-      {/* Sub-icons */}
-      {items.map((item, i) => (
-        <a
-          key={item.label}
-          href={item.href}
-          target={item.label !== "Call Us" ? "_blank" : undefined}
-          rel={item.label !== "Call Us" ? "noopener noreferrer" : undefined}
-          className={`group flex items-center gap-2 transition-all duration-300 ease-out ${
-            open
-              ? "translate-y-0 opacity-100 scale-100"
-              : "translate-y-4 opacity-0 scale-75 pointer-events-none"
-          }`}
-          style={{ transitionDelay: open ? `${i * 60}ms` : "0ms" }}
-          onClick={() => setOpen(false)}
-        >
-          {/* Tooltip */}
-          <span className="rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            {item.label}
-          </span>
-          {/* Icon button */}
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full ${item.bg} text-white shadow-lg ${item.shadow} transition-transform hover:scale-110 cursor-pointer`}
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Sub-icons in circular arc */}
+      {items.map((item, i) => {
+        const angle = angles[i];
+        const rad = (angle * Math.PI) / 180;
+        const x = Math.cos(rad) * radius;
+        const y = Math.sin(rad) * radius;
+
+        return (
+          <a
+            key={item.label}
+            href={item.href}
+            target={item.label !== "Call Us" ? "_blank" : undefined}
+            rel={item.label !== "Call Us" ? "noopener noreferrer" : undefined}
+            className={`group absolute transition-all duration-300 ease-out ${
+              open
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-0 pointer-events-none"
+            }`}
+            style={{
+              bottom: `${7 - y}px`,
+              right: `${7 - x}px`,
+              transitionDelay: open ? `${i * 70}ms` : "0ms",
+            }}
+            onClick={() => setOpen(false)}
           >
-            {item.icon}
-          </div>
-        </a>
-      ))}
+            {/* Tooltip */}
+            <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              {item.label}
+            </span>
+            {/* Icon button */}
+            <div
+              className={`flex h-11 w-11 items-center justify-center rounded-full ${item.bg} text-white shadow-lg ${item.shadow} transition-transform hover:scale-110 cursor-pointer`}
+            >
+              {item.icon}
+            </div>
+          </a>
+        );
+      })}
 
       {/* Main FAB button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/40 hover:scale-105 cursor-pointer ${
-          open ? "rotate-45" : "rotate-0"
+        className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/30 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/40 hover:scale-105 cursor-pointer ${
+          open ? "rotate-[135deg]" : "rotate-0"
         }`}
         aria-label="Live Support"
       >
