@@ -335,7 +335,7 @@ function LiveSupportFAB() {
                 : "opacity-0 scale-0 pointer-events-none"
             }`}
             style={{
-              bottom: `${7 - y}px`,
+              bottom: `${7 + y}px`,
               right: `${7 - x}px`,
               transitionDelay: open ? `${i * 70}ms` : "0ms",
             }}
