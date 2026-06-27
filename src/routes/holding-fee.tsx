@@ -144,18 +144,32 @@ function HoldingPage() {
           <StepPanel keyId={step}>
             {step === 0 && (
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
-                <Field label="Unit number"><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. 4B" /></Field>
+                <Field label="Your full legal name"><Input id="hf-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
+                <Field label="Unit number"><Input id="hf-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. 4B" /></Field>
                 <Field label="Holding Fee (USD)">
                   <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800">
                     ${amount.toFixed(2)} <span className="text-xs font-normal text-slate-500">(fixed fee)</span>
                   </div>
                 </Field>
-                <Field label="Reservation start"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
-                <Field label="Reservation end"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
+                <Field label="Reservation start"><Input id="hf-start" type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
+                <Field label="Reservation end"><Input id="hf-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
                 <Field label="Terms" hint="Free-form reservation terms"><Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="e.g. 12-month lease, first month + security at signing." /></Field>
                 <div className="sm:col-span-2 flex justify-end">
-                  <Button disabled={!unit || !start || !end || !name.trim()} onClick={() => setStep(1)}>Continue</Button>
+                  <Button onClick={() => {
+                    const fields = [
+                      { val: name.trim(), id: 'hf-name' },
+                      { val: unit, id: 'hf-unit' },
+                      { val: start, id: 'hf-start' },
+                      { val: end, id: 'hf-end' },
+                    ];
+                    const missing = fields.find(f => !f.val);
+                    if (missing) {
+                      const el = document.getElementById(missing.id);
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      return;
+                    }
+                    setStep(1);
+                  }}>Continue</Button>
                 </div>
               </div>
             )}
@@ -172,11 +186,18 @@ function HoldingPage() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Your full legal name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Renter" /></Field>
-                  <Field label="Type your name to sign" hint="Type your signature"><Input value={typedSig} onChange={(e) => setTypedSig(e.target.value)} /></Field>
+                  <Field label="Type your name to sign" hint="Type your signature"><Input id="hf-sig" value={typedSig} onChange={(e) => setTypedSig(e.target.value)} /></Field>
                 </div>
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
-                  <Button disabled={!signed} onClick={() => setStep(2)}>Sign & continue</Button>
+                  <Button onClick={() => {
+                    if (!typedSig.trim()) {
+                      const el = document.getElementById('hf-sig');
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      return;
+                    }
+                    setStep(2);
+                  }}>Sign & continue</Button>
                 </div>
               </div>
             )}

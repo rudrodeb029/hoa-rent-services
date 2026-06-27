@@ -147,8 +147,8 @@ function HomeInsurancePage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Your full legal name"><input className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
-                  <Field label="Unit / Property address"><input className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 4B" /></Field>
+                  <Field label="Your full legal name"><input id="hi-name" className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
+                  <Field label="Unit / Property address"><input id="hi-unit" className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 4B" /></Field>
                 </div>
 
                 {pageSettings.homeInsuranceNote && (
@@ -159,7 +159,19 @@ function HomeInsurancePage() {
                 )}
 
                 <div className="flex justify-end">
-                  <Button disabled={!name.trim() || !unit.trim()} onClick={() => setStep(1)}>Continue to Payment</Button>
+                  <Button onClick={() => {
+                    if (!name.trim()) {
+                      const el = document.getElementById('hi-name');
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      return;
+                    }
+                    if (!unit.trim()) {
+                      const el = document.getElementById('hi-unit');
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      return;
+                    }
+                    setStep(1);
+                  }}>Continue to Payment</Button>
                 </div>
               </div>
             )}

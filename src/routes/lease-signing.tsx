@@ -937,12 +937,12 @@ function LeasePage() {
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Basic Information</h3>
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <Field label="Tenant name"><Input value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
-                      <Field label="Landlord name"><Input value={landlordName} onChange={(e) => setLandlordName(e.target.value)} placeholder="e.g. Morgan Landlord" /></Field>
-                      <Field label="Agreement date"><Input type="date" value={agreementDate} onChange={(e) => setAgreementDate(e.target.value)} /></Field>
-                      <Field label="Unit / Address"><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 1, 100 Main St, City" /></Field>
-                      <Field label="Start date"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
-                      <Field label="End date"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
+                      <Field label="Tenant name"><Input id="ls-tenant" value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
+                      <Field label="Landlord name"><Input id="ls-landlord" value={landlordName} onChange={(e) => setLandlordName(e.target.value)} placeholder="e.g. Morgan Landlord" /></Field>
+                      <Field label="Agreement date"><Input id="ls-agdate" type="date" value={agreementDate} onChange={(e) => setAgreementDate(e.target.value)} /></Field>
+                      <Field label="Unit / Address"><Input id="ls-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 1, 100 Main St, City" /></Field>
+                      <Field label="Start date"><Input id="ls-start" type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
+                      <Field label="End date"><Input id="ls-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
                     </div>
                   </div>
 
@@ -954,8 +954,8 @@ function LeasePage() {
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
                       <div className="grid grid-cols-3 gap-2">
-                        <Field label="Bedrooms"><Input type="number" value={bedrooms || ""} onChange={(e) => setBedrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
-                        <Field label="Bathrooms"><Input type="number" value={bathrooms || ""} onChange={(e) => setBathrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
+                        <Field label="Bedrooms"><Input id="ls-bed" type="number" value={bedrooms || ""} onChange={(e) => setBedrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
+                        <Field label="Bathrooms"><Input id="ls-bath" type="number" value={bathrooms || ""} onChange={(e) => setBathrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
                         <Field label="Parking"><Input type="number" value={parkingSpaces || ""} onChange={(e) => setParkingSpaces(Number(e.target.value))} placeholder="e.g. 0" /></Field>
                       </div>
 
@@ -969,7 +969,7 @@ function LeasePage() {
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Financial & Payment Terms</h3>
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <Field label="Monthly rent"><Input type="number" value={rent || ""} onChange={(e) => setRent(Number(e.target.value))} placeholder="e.g. 1500" /></Field>
+                      <Field label="Monthly rent"><Input id="ls-rent" type="number" value={rent || ""} onChange={(e) => setRent(Number(e.target.value))} placeholder="e.g. 1500" /></Field>
 
                       <Field label="Security deposit"><Input type="number" value={securityDeposit || ""} onChange={(e) => setSecurityDeposit(Number(e.target.value))} placeholder="e.g. 1500" /></Field>
 
@@ -991,8 +991,8 @@ function LeasePage() {
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Legal & Notice Details</h3>
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <Field label="Governing state"><Input value={governingState} onChange={(e) => setGoverningState(e.target.value)} /></Field>
-                      <Field label="Dispute county"><Input value={disputeCounty} onChange={(e) => setDisputeCounty(e.target.value)} placeholder="e.g. Maricopa" /></Field>
+                      <Field label="Governing state"><Input id="ls-gstate" value={governingState} onChange={(e) => setGoverningState(e.target.value)} /></Field>
+                      <Field label="Dispute county"><Input id="ls-county" value={disputeCounty} onChange={(e) => setDisputeCounty(e.target.value)} placeholder="e.g. Maricopa" /></Field>
                       
                       <div className="sm:col-span-2 border-t border-slate-100 pt-3 mt-1">
                         <span className="block text-[10px] font-bold text-slate-500 mb-2 uppercase">Official Notice Addresses</span>
@@ -1015,7 +1015,30 @@ function LeasePage() {
                       </div>
                     )}
                     <div className="flex justify-end">
-                      <Button disabled={!isFormComplete} onClick={() => setBuilderStep(1)}>Continue</Button>
+                      <Button onClick={() => {
+                        if (!isFormComplete) {
+                          const fieldMap = [
+                            { check: tenant.trim() !== '', id: 'ls-tenant' },
+                            { check: landlordName.trim() !== '', id: 'ls-landlord' },
+                            { check: agreementDate.trim() !== '', id: 'ls-agdate' },
+                            { check: unit.trim() !== '', id: 'ls-unit' },
+                            { check: start.trim() !== '', id: 'ls-start' },
+                            { check: end.trim() !== '', id: 'ls-end' },
+                            { check: bedrooms > 0, id: 'ls-bed' },
+                            { check: bathrooms > 0, id: 'ls-bath' },
+                            { check: rent > 0, id: 'ls-rent' },
+                            { check: governingState.trim() !== '', id: 'ls-gstate' },
+                            { check: disputeCounty.trim() !== '', id: 'ls-county' },
+                          ];
+                          const missing = fieldMap.find(f => !f.check);
+                          if (missing) {
+                            const el = document.getElementById(missing.id);
+                            if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                          }
+                          return;
+                        }
+                        setBuilderStep(1);
+                      }}>Continue</Button>
                     </div>
                   </div>
                 </div>
@@ -1082,9 +1105,9 @@ function LeasePage() {
                     </p>
                     
                     <div className="grid gap-4 sm:grid-cols-2 pt-2">
-                      <Field label="Type tenant full name to sign"><Input value={typedSignature} onChange={(e) => setTypedSignature(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
+                      <Field label="Type tenant full name to sign"><Input id="ls-sig" value={typedSignature} onChange={(e) => setTypedSignature(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
                       <label className="flex items-start gap-3 mt-6">
-                        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
+                        <input id="ls-consent" type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
                         <span className="text-xs text-slate-700 font-medium">I agree to the terms of this lease agreement and electronically sign this document.</span>
                       </label>
                     </div>
@@ -1092,7 +1115,19 @@ function LeasePage() {
 
                   <div className="flex justify-between pt-4">
                     <Button variant="ghost" onClick={() => setBuilderStep(0)}>Back</Button>
-                    <Button disabled={!consent || !typedSignature.trim()} onClick={() => { sign(); setBuilderStep(2); }}>Sign & continue</Button>
+                    <Button onClick={() => {
+                      if (!typedSignature.trim()) {
+                        const el = document.getElementById('ls-sig');
+                        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                        return;
+                      }
+                      if (!consent) {
+                        const el = document.querySelector('#ls-consent') as HTMLElement;
+                        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                        return;
+                      }
+                      sign(); setBuilderStep(2);
+                    }}>Sign & continue</Button>
                   </div>
                 </div>
               )}

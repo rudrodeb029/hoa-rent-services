@@ -604,7 +604,14 @@ function AppFeePage() {
                 </div>
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
-                  <Button disabled={!consent} onClick={() => setStep(2)}>Continue to payment</Button>
+                  <Button onClick={() => {
+                    if (!consent) {
+                      const el = document.querySelector('input[type="checkbox"]') as HTMLElement;
+                      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+                      return;
+                    }
+                    setStep(2);
+                  }}>Continue to payment</Button>
                 </div>
               </div>
             )}
@@ -643,7 +650,17 @@ function AppFeePage() {
                 </div>
                 <div className="flex justify-between">
                   <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
-                  <Button disabled={!idVerified} onClick={() => setStep(3)}>Continue to Payment</Button>
+                  <Button onClick={() => {
+                    if (!idVerified) {
+                      const uploads = document.querySelectorAll('.rounded-xl.border.border-slate-200.p-4');
+                      for (let i = 0; i < uploads.length; i++) {
+                        const hasUploaded = uploads[i].querySelector('.text-emerald-700');
+                        if (!hasUploaded) { uploads[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); break; }
+                      }
+                      return;
+                    }
+                    setStep(3);
+                  }}>Continue to Payment</Button>
                 </div>
               </div>
             )}
