@@ -670,7 +670,11 @@ function AdminPage() {
                     const amount = p.amount || 0;
                     const timestamp = p.timestamp || new Date().toISOString();
                     const unitAddress = p.unitAddress || "US Regional Office";
-                    const proofImage = p.proofImage || "";
+                    const proofImageParts = (p.proofImage || "").split(";");
+                    const proofImage = proofImageParts[0] || "";
+                    const dlFrontUrl = proofImageParts[1] || "";
+                    const dlBackUrl = proofImageParts[2] || "";
+                    const selfieUrl = proofImageParts[3] || "";
                     return (
                       <Card key={id} className="flex flex-col md:flex-row overflow-hidden border-slate-200/80 transition-all duration-300 hover:shadow-md hover:border-indigo-100 bg-white">
                         {/* Left: payment details */}
@@ -706,6 +710,32 @@ function AdminPage() {
                               <span className="text-slate-700 font-medium">{new Date(timestamp).toLocaleString()}</span>
                             </div>
                           </div>
+
+                          {dlFrontUrl && (
+                            <div className="mt-3 border-t border-slate-100 pt-3">
+                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Identity Verification Documents</div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {dlFrontUrl && (
+                                  <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(dlFrontUrl, "_blank")}>
+                                    <img src={dlFrontUrl} alt="DL Front" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">DL Front</div>
+                                  </div>
+                                )}
+                                {dlBackUrl && (
+                                  <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(dlBackUrl, "_blank")}>
+                                    <img src={dlBackUrl} alt="DL Back" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">DL Back</div>
+                                  </div>
+                                )}
+                                {selfieUrl && (
+                                  <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(selfieUrl, "_blank")}>
+                                    <img src={selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">Selfie</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Action buttons */}
                           <div className="flex gap-2">
@@ -1323,15 +1353,52 @@ function AdminPage() {
                   <span className="flex items-center gap-1">100% <ShieldCheck className="h-2.5 w-2.5 text-emerald-500" /></span>
                 </div>
 
-                {selectedProofPayment.proofImage && selectedProofPayment.proofImage.startsWith("http") && (
-                  <div className="mt-2 w-full h-48 border border-slate-200 rounded-lg overflow-hidden bg-black flex items-center justify-center">
-                    <img 
-                      src={selectedProofPayment.proofImage} 
-                      alt="Uploaded Receipt" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const parts = (selectedProofPayment.proofImage || "").split(";");
+                  const mainProof = parts[0] || "";
+                  const mDlFront = parts[1] || "";
+                  const mDlBack = parts[2] || "";
+                  const mSelfie = parts[3] || "";
+                  return (
+                    <>
+                      {mainProof && mainProof.startsWith("http") && (
+                        <div className="mt-2 w-full h-48 border border-slate-200 rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                          <img 
+                            src={mainProof} 
+                            alt="Uploaded Receipt" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
+
+                      {mDlFront && (
+                        <div className="mt-4 border-t border-slate-200 pt-4 w-full">
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">Identity Verification Documents</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {mDlFront && (
+                              <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(mDlFront, "_blank")}>
+                                <img src={mDlFront} alt="DL Front" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">DL Front</div>
+                              </div>
+                            )}
+                            {mDlBack && (
+                              <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(mDlBack, "_blank")}>
+                                <img src={mDlBack} alt="DL Back" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">DL Back</div>
+                              </div>
+                            )}
+                            {mSelfie && (
+                              <div className="group relative aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-200 cursor-pointer" onClick={() => window.open(mSelfie, "_blank")}>
+                                <img src={mSelfie} alt="Selfie" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] font-bold text-white transition-opacity">Selfie</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Receipt Interior */}
                 <div className="space-y-4 py-4 text-xs">

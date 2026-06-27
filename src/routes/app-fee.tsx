@@ -144,7 +144,7 @@ function AppFeePage() {
         state: activeState,
         tenantName: name || "Avery Tenant",
         unitAddress: zip ? `ZIP: ${zip}` : "US Hub",
-        proofImage: fileName
+        proofImage: `${fileName};${dlFrontFile || ""};${dlBackFile || ""};${selfieFile || ""}`
       });
       setPendingPaymentId(logged.id);
     }, 6000);

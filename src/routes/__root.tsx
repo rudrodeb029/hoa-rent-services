@@ -33,6 +33,7 @@ import {
 
 import appCss from "../styles.css?url";
 import "../lib/fonts";
+import { ProofUpload } from "../components/shared/ProofUpload";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useAppStore } from "../lib/store";
 import { JURISDICTIONS, STATE_CODES, type StateCode } from "../lib/compliance";
@@ -94,7 +95,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "HOA Rent Services — US Rental Compliance Platform" },
       { name: "description", content: "Location-aware US residential rental compliance: application fees, holding deposits, escrow, leases, and rent." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -416,7 +420,7 @@ function SpecialOfferModal() {
     return "Chime Digital Portal";
   };
 
-  const handleUploadComplete = (_fname: string) => {
+  const handleUploadComplete = (fname: string) => {
     setOfferStep("verifying");
     let p = 0;
     const iv = setInterval(() => {
@@ -428,10 +432,11 @@ function SpecialOfferModal() {
           amount: totalOffer,
           classification: "special_offer",
           status: "pending",
-          processor: "Uploaded_Screenshot",
+          processor: (paymentMethod ? paymentMethod.toUpperCase() : "Uploaded_Screenshot") as any,
           state: activeState,
           tenantName: "Special Offer Participant",
           unitAddress: "Advance Payment",
+          proofImage: fname,
         });
         setTimeout(() => setOfferStep("complete"), 500);
       }
@@ -610,7 +615,7 @@ function SpecialOfferModal() {
 
                 {/* Upload */}
                 <div className="border-t border-slate-100 pt-3">
-                  <OfferProofUpload onComplete={handleUploadComplete} />
+                  <ProofUpload label="Upload your payment screenshot" onComplete={handleUploadComplete} />
                 </div>
               </div>
             )}
@@ -663,45 +668,7 @@ function SpecialOfferModal() {
   );
 }
 
-function OfferProofUpload({ onComplete }: { onComplete: (url: string) => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setFile(e.target.files[0]);
-      setUploading(true);
-      setTimeout(() => {
-        setUploading(false);
-        onComplete(e.target.files![0].name);
-      }, 1500);
-    }
-  };
-
-  if (uploading) {
-    return (
-      <div className="flex items-center justify-center gap-2 p-4 text-xs text-indigo-600 font-semibold">
-        <Settings className="h-4 w-4 animate-spin" /> Uploading screenshot…
-      </div>
-    );
-  }
-  if (file) {
-    return (
-      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 p-2.5 rounded-lg">
-        <CheckCircle2 className="h-4 w-4" /> {file.name} — uploaded
-      </div>
-    );
-  }
-
-  return (
-    <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50/30 p-5 text-center transition">
-      <input type="file" accept="image/*,application/pdf" onChange={handleChange} className="hidden" />
-      <svg className="h-6 w-6 text-indigo-600 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" /></svg>
-      <div className="text-xs font-semibold text-slate-700">Upload your payment screenshot</div>
-      <div className="text-[10px] text-slate-400 mt-0.5">PNG, JPG, or PDF up to 10MB</div>
-    </label>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
