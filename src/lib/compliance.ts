@@ -555,27 +555,27 @@ export const JURISDICTIONS: Record<StateCode, Jurisdiction> = {
 
 export const STATE_CODES = Object.keys(JURISDICTIONS) as StateCode[];
 
-export function describeAppFee(j: Jurisdiction): string {
-  switch (j.appFeeRule.type) {
-    case "banned":
-      return "Application fees are BANNED in this state.";
-    case "broker_only":
-      return "Landlords may NOT charge application fees (brokers only).";
-    case "capped":
-      return `Maximum $${j.appFeeRule.max.toFixed(2)} per application${
-        j.appFeeRule.waivable ? " — waived with recent screening report" : ""
-      }.`;
-    case "cost_reimbursement":
-      return `Cost-reimbursement only${
-        j.appFeeRule.max ? `, absolute cap $${j.appFeeRule.max.toFixed(2)}` : ""
-      }${j.appFeeRule.portableReportWaiver ? "; free if portable report provided" : ""}.`;
+// Override dynamic rules to align with user requirement:
+// NY: $29.99 per adult, all other states: $99.99 per adult.
+for (const state of STATE_CODES) {
+  if (state === "NY") {
+    JURISDICTIONS[state].appFeeRule = { type: "capped", max: 29.99, waivable: true };
+    JURISDICTIONS[state].notes = "Application fee is capped at $29.99 per adult. Waived with recent screening report.";
+  } else {
+    JURISDICTIONS[state].appFeeRule = { type: "capped", max: 99.99 };
+    JURISDICTIONS[state].notes = "Application fee is $99.99 per adult.";
   }
 }
 
+export function describeAppFee(j: Jurisdiction): string {
+  if (j.code === "NY") {
+    return "Maximum $29.99 per adult (waived with recent screening report).";
+  }
+  return "Maximum $99.99 per adult.";
+}
+
 export function maxAppFee(j: Jurisdiction): number {
-  if (j.appFeeRule.type === "capped") return j.appFeeRule.max;
-  if (j.appFeeRule.type === "cost_reimbursement") return j.appFeeRule.max ?? 75;
-  return 0;
+  return j.code === "NY" ? 29.99 : 99.99;
 }
 
 export function describeInterest(j: Jurisdiction): string {

@@ -185,7 +185,8 @@ function AppFeePage() {
 
   // Compliance auditing for actual calculated application fee
   const auditReport = useMemo(() => {
-    const limit = maxAppFee(j);
+    const limitPerAdult = maxAppFee(j);
+    const limit = limitPerAdult * numAdults;
     
     if (banned) {
       return {
@@ -199,16 +200,16 @@ function AppFeePage() {
       return {
         compliant: false,
         title: `🚨 Non-Compliant Fee ($${calculatedAmount.toFixed(2)}) — Capped in ${j.name}`,
-        message: `${j.name} statutory code caps tenant screening fees at $${limit.toFixed(2)} per adult. The calculated fee of $${calculatedAmount.toFixed(2)} exceeds this cap. HOA Rent Services has automatically adjusted the invoice to the legal limit of $${limit.toFixed(2)}.`,
+        message: `${j.name} statutory code caps tenant screening fees at $${limitPerAdult.toFixed(2)} per adult (Total cap: $${limit.toFixed(2)} for ${numAdults} adult(s)). The calculated fee of $${calculatedAmount.toFixed(2)} exceeds this cap. HOA Rent Services has automatically adjusted the invoice to the legal limit of $${limit.toFixed(2)}.`,
       };
     }
     
     return {
       compliant: true,
       title: `✅ Compliant Fee ($${calculatedAmount.toFixed(2)}) — Approved in ${j.name}`,
-      message: `The $${calculatedAmount.toFixed(2)} screening fee is compliant with local limits in ${j.name} (Cap: ${limit ? `$${limit.toFixed(2)}` : "Cost reimbursement limit"}).`,
+      message: `The $${calculatedAmount.toFixed(2)} screening fee is compliant with local limits in ${j.name} (Cap: $${limitPerAdult.toFixed(2)} per adult).`,
     };
-  }, [j, banned, calculatedAmount]);
+  }, [j, banned, calculatedAmount, numAdults]);
 
   return (
     <PageShell>
@@ -975,7 +976,7 @@ function AppFeePage() {
                 <div>
                   <h4 className="text-xs font-bold tracking-wider text-slate-700">Dynamic state rate compliance</h4>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Our platform queries statutory codes for all 50 US states. Rent caps, application fee limits (such as California's cap of $65.21 or New York's $20 cap), and deposit limits are auto-enforced at invoice generation.
+                    Our platform queries statutory codes for all 50 US states. Rent caps, application fee limits (such as New York's cap of $29.99 per adult or all other states' cap of $99.99 per adult), and deposit limits are auto-enforced at invoice generation.
                   </p>
                 </div>
               </div>
