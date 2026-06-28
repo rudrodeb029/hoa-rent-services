@@ -127,12 +127,12 @@ function HomeInsurancePage() {
         {/* Modern styled card header */}
         <div className="bg-gradient-to-r from-slate-50/80 via-indigo-50/20 to-blue-50/20 border-b border-slate-100 p-5 relative z-10">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 animate-[pulse_2s_infinite]">
               <Shield className="h-5.5 w-5.5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800">Home Insurance Coverage</h3>
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">Secure your property with a one-time insurance payment that covers damages, liability, and peace of mind.</p>
+              <h3 className="text-sm font-bold text-slate-800">🔑 Activate Coverage & Fast-Track Your Keys</h3>
+              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed font-medium">Authorize your one-time property coverage contribution to secure immediate key handover and finalize your tenant check-in instantly.</p>
             </div>
           </div>
         </div>
