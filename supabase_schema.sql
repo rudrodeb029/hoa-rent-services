@@ -121,6 +121,18 @@ create table if not exists public.page_settings (
   security_custom_apr numeric not null default 0.015,
   rent_grace_days integer not null default 5,
   rent_late_fee_percent numeric not null default 10,
+  support_whatsapp text not null default '+1 (555) 0199',
+  support_telegram text not null default '@hoarentservices_support',
+  support_cell_phone text not null default '+1 (555) 0100',
+  home_insurance_fee numeric not null default 499,
+  home_insurance_note text not null default '',
+  payment_note text not null default '',
+  pay_venmo_handle text not null default '@hoarentservices',
+  pay_venmo_qr text not null default '',
+  pay_cash_app_handle text not null default '$hoarentservices',
+  pay_cash_app_qr text not null default '',
+  pay_chime_handle text not null default 'hoarentservices@chime.com',
+  pay_chime_qr text not null default '',
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

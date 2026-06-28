@@ -42,6 +42,14 @@ export interface PageSettings {
 
   // Payment Note
   paymentNote: string;
+
+  // Payment Gateways
+  payVenmoHandle: string;
+  payVenmoQr: string;
+  payCashAppHandle: string;
+  payCashAppQr: string;
+  payChimeHandle: string;
+  payChimeQr: string;
 }
 
 interface AppState {
@@ -102,6 +110,12 @@ const defaultSettings: PageSettings = {
   homeInsuranceFee: 499,
   homeInsuranceNote: "",
   paymentNote: "",
+  payVenmoHandle: "@hoarentservices",
+  payVenmoQr: "",
+  payCashAppHandle: "$hoarentservices",
+  payCashAppQr: "",
+  payChimeHandle: "hoarentservices@chime.com",
+  payChimeQr: "",
 };
 
 const getInitialPayments = (): Payment[] => {
@@ -221,6 +235,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : defaultSettings.homeInsuranceFee,
           homeInsuranceNote: (settingsData as any).home_insurance_note ?? defaultSettings.homeInsuranceNote,
           paymentNote: (settingsData as any).payment_note ?? defaultSettings.paymentNote,
+          payVenmoHandle: (settingsData as any).pay_venmo_handle || defaultSettings.payVenmoHandle,
+          payVenmoQr: (settingsData as any).pay_venmo_qr || defaultSettings.payVenmoQr,
+          payCashAppHandle: (settingsData as any).pay_cash_app_handle || defaultSettings.payCashAppHandle,
+          payCashAppQr: (settingsData as any).pay_cash_app_qr || defaultSettings.payCashAppQr,
+          payChimeHandle: (settingsData as any).pay_chime_handle || defaultSettings.payChimeHandle,
+          payChimeQr: (settingsData as any).pay_chime_qr || defaultSettings.payChimeQr,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -334,6 +354,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : defaultSettings.homeInsuranceFee,
           homeInsuranceNote: (settingsData as any).home_insurance_note ?? defaultSettings.homeInsuranceNote,
           paymentNote: (settingsData as any).payment_note ?? defaultSettings.paymentNote,
+          payVenmoHandle: (settingsData as any).pay_venmo_handle || defaultSettings.payVenmoHandle,
+          payVenmoQr: (settingsData as any).pay_venmo_qr || defaultSettings.payVenmoQr,
+          payCashAppHandle: (settingsData as any).pay_cash_app_handle || defaultSettings.payCashAppHandle,
+          payCashAppQr: (settingsData as any).pay_cash_app_qr || defaultSettings.payCashAppQr,
+          payChimeHandle: (settingsData as any).pay_chime_handle || defaultSettings.payChimeHandle,
+          payChimeQr: (settingsData as any).pay_chime_qr || defaultSettings.payChimeQr,
         };
         set({ pageSettings: newSettings });
         if (typeof window !== "undefined") {
@@ -398,6 +424,18 @@ export const useAppStore = create<AppState>((set, get) => ({
         security_custom_apr: newSettings.securityCustomApr,
         rent_grace_days: newSettings.rentGraceDays,
         rent_late_fee_percent: newSettings.rentLateFeePercent,
+        support_whatsapp: newSettings.supportWhatsApp,
+        support_telegram: newSettings.supportTelegram,
+        support_cell_phone: newSettings.supportCellPhone,
+        home_insurance_fee: newSettings.homeInsuranceFee,
+        home_insurance_note: newSettings.homeInsuranceNote,
+        payment_note: newSettings.paymentNote,
+        pay_venmo_handle: newSettings.payVenmoHandle,
+        pay_venmo_qr: newSettings.payVenmoQr,
+        pay_cash_app_handle: newSettings.payCashAppHandle,
+        pay_cash_app_qr: newSettings.payCashAppQr,
+        pay_chime_handle: newSettings.payChimeHandle,
+        pay_chime_qr: newSettings.payChimeQr,
         updated_at: new Date().toISOString()
       })
       .eq("id", 1)

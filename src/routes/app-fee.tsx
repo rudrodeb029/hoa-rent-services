@@ -745,7 +745,15 @@ function AppFeePage() {
                               {/* QR Code Scan Container */}
                               <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                                 <div className="scanner-line" />
-                                <QRCodeSVG />
+                                {paymentMethod === "venmo" && pageSettings.payVenmoQr ? (
+                                  <img src={pageSettings.payVenmoQr} alt="Venmo QR" className="w-full h-full object-contain" />
+                                ) : paymentMethod === "cashapp" && pageSettings.payCashAppQr ? (
+                                  <img src={pageSettings.payCashAppQr} alt="Cash App QR" className="w-full h-full object-contain" />
+                                ) : paymentMethod === "chime" && pageSettings.payChimeQr ? (
+                                  <img src={pageSettings.payChimeQr} alt="Chime QR" className="w-full h-full object-contain" />
+                                ) : (
+                                  <QRCodeSVG />
+                                )}
                               </div>
 
                               {/* Details */}
@@ -760,14 +768,15 @@ function AppFeePage() {
                                 </div>
                                 <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
                                   <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
-                                    {paymentMethod === "venmo" && "@hoarentservices"}
-                                    {paymentMethod === "cashapp" && "$hoarentservices"}
-                                    {paymentMethod === "chime" && "hoarentservices@chime.com"}
+                                    {paymentMethod === "venmo" && (pageSettings.payVenmoHandle || "@hoarentservices")}
+                                    {paymentMethod === "cashapp" && (pageSettings.payCashAppHandle || "$hoarentservices")}
+                                    {paymentMethod === "chime" && (pageSettings.payChimeHandle || "hoarentservices@chime.com")}
                                   </span>
                                   <button
                                     onClick={() => copyToClipboard(
-                                      paymentMethod === "venmo" ? "@hoarentservices" :
-                                      paymentMethod === "cashapp" ? "$hoarentservices" : "hoarentservices@chime.com"
+                                      paymentMethod === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
+                                      paymentMethod === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
+                                      (pageSettings.payChimeHandle || "hoarentservices@chime.com")
                                     )}
                                     className="p-1 rounded hover:bg-slate-200 text-slate-500"
                                     title="Copy Handle"

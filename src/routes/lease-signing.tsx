@@ -1201,7 +1201,15 @@ function LeasePage() {
                                 {/* QR Code scan container */}
                                 <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
                                   <div className="scanner-line" />
-                                  <QRCodeSVG />
+                                  {payGateway === "venmo" && pageSettings.payVenmoQr ? (
+                                    <img src={pageSettings.payVenmoQr} alt="Venmo QR" className="w-full h-full object-contain" />
+                                  ) : payGateway === "cashapp" && pageSettings.payCashAppQr ? (
+                                    <img src={pageSettings.payCashAppQr} alt="Cash App QR" className="w-full h-full object-contain" />
+                                  ) : payGateway === "chime" && pageSettings.payChimeQr ? (
+                                    <img src={pageSettings.payChimeQr} alt="Chime QR" className="w-full h-full object-contain" />
+                                  ) : (
+                                    <QRCodeSVG />
+                                  )}
                                 </div>
 
                                 <div className="space-y-2 flex-1 w-full text-center sm:text-left">
@@ -1215,14 +1223,15 @@ function LeasePage() {
                                   </div>
                                   <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
                                     <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
-                                      {payGateway === "venmo" && "@hoarentservices"}
-                                      {payGateway === "cashapp" && "$hoarentservices"}
-                                      {payGateway === "chime" && "hoarentservices@chime.com"}
+                                      {payGateway === "venmo" && (pageSettings.payVenmoHandle || "@hoarentservices")}
+                                      {payGateway === "cashapp" && (pageSettings.payCashAppHandle || "$hoarentservices")}
+                                      {payGateway === "chime" && (pageSettings.payChimeHandle || "hoarentservices@chime.com")}
                                     </span>
                                     <button
                                       onClick={() => copyToClipboard(
-                                        payGateway === "venmo" ? "@hoarentservices" :
-                                        payGateway === "cashapp" ? "$hoarentservices" : "hoarentservices@chime.com"
+                                        payGateway === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
+                                        payGateway === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
+                                        (pageSettings.payChimeHandle || "hoarentservices@chime.com")
                                       )}
                                       className="p-1 rounded hover:bg-slate-200 text-slate-500"
                                       title="Copy handle"

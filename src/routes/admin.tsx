@@ -35,6 +35,7 @@ import { useAppStore } from "@/lib/store";
 import type { Payment, PaymentStatus } from "@/lib/types";
 import { PageShell, PageHeader, Card, CardHeader, Button, Field, Input, Select, Textarea, Pill } from "@/components/shared/Primitives";
 import { JURISDICTIONS, STATE_CODES, type StateCode } from "@/lib/compliance";
+import { ProofUpload } from "../components/shared/ProofUpload";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -113,6 +114,12 @@ function AdminPage() {
   const [homeInsuranceFee, setHomeInsuranceFee] = useState(pageSettings.homeInsuranceFee);
   const [homeInsuranceNote, setHomeInsuranceNote] = useState(pageSettings.homeInsuranceNote);
   const [paymentNote, setPaymentNote] = useState(pageSettings.paymentNote);
+  const [payVenmoHandle, setPayVenmoHandle] = useState(pageSettings.payVenmoHandle);
+  const [payVenmoQr, setPayVenmoQr] = useState(pageSettings.payVenmoQr);
+  const [payCashAppHandle, setPayCashAppHandle] = useState(pageSettings.payCashAppHandle);
+  const [payCashAppQr, setPayCashAppQr] = useState(pageSettings.payCashAppQr);
+  const [payChimeHandle, setPayChimeHandle] = useState(pageSettings.payChimeHandle);
+  const [payChimeQr, setPayChimeQr] = useState(pageSettings.payChimeQr);
 
   const [saveSectionName, setSaveSectionName] = useState<string | null>(null);
   const [complianceState, setComplianceState] = useState<StateCode>(activeState);
@@ -165,6 +172,12 @@ function AdminPage() {
     setHomeInsuranceFee(pageSettings.homeInsuranceFee);
     setHomeInsuranceNote(pageSettings.homeInsuranceNote);
     setPaymentNote(pageSettings.paymentNote);
+    setPayVenmoHandle(pageSettings.payVenmoHandle);
+    setPayVenmoQr(pageSettings.payVenmoQr);
+    setPayCashAppHandle(pageSettings.payCashAppHandle);
+    setPayCashAppQr(pageSettings.payCashAppQr);
+    setPayChimeHandle(pageSettings.payChimeHandle);
+    setPayChimeQr(pageSettings.payChimeQr);
   }, [pageSettings]);
 
   // Helper to save setting sections
@@ -1182,6 +1195,66 @@ function AdminPage() {
                   </Field>
                 </div>
 
+                {/* Payment Gateways & QR Codes */}
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Payment Gateways & QR Codes</div>
+                  <div className="space-y-4">
+                    {/* Venmo */}
+                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                      <Field label="Venmo Handle" hint="Venmo payment tag">
+                        <Input value={payVenmoHandle} onChange={(e) => setPayVenmoHandle(e.target.value)} />
+                      </Field>
+                      <div className="space-y-2">
+                        <span className="block text-[10px] font-semibold text-slate-500">Venmo QR Image</span>
+                        {payVenmoQr ? (
+                          <div className="flex items-center gap-3">
+                            <img src={payVenmoQr} alt="Venmo QR" className="w-12 h-12 rounded border bg-white object-contain" />
+                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayVenmoQr("")}>Remove QR</Button>
+                          </div>
+                        ) : (
+                          <ProofUpload label="Upload Venmo QR" onComplete={(url) => setPayVenmoQr(url)} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Cash App */}
+                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                      <Field label="Cash App Tag" hint="Cash App payment tag">
+                        <Input value={payCashAppHandle} onChange={(e) => setPayCashAppHandle(e.target.value)} />
+                      </Field>
+                      <div className="space-y-2">
+                        <span className="block text-[10px] font-semibold text-slate-500">Cash App QR Image</span>
+                        {payCashAppQr ? (
+                          <div className="flex items-center gap-3">
+                            <img src={payCashAppQr} alt="Cash App QR" className="w-12 h-12 rounded border bg-white object-contain" />
+                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayCashAppQr("")}>Remove QR</Button>
+                          </div>
+                        ) : (
+                          <ProofUpload label="Upload Cash App QR" onComplete={(url) => setPayCashAppQr(url)} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Chime */}
+                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                      <Field label="Chime Tag / Email" hint="Chime payment handle">
+                        <Input value={payChimeHandle} onChange={(e) => setPayChimeHandle(e.target.value)} />
+                      </Field>
+                      <div className="space-y-2">
+                        <span className="block text-[10px] font-semibold text-slate-500">Chime QR Image</span>
+                        {payChimeQr ? (
+                          <div className="flex items-center gap-3">
+                            <img src={payChimeQr} alt="Chime QR" className="w-12 h-12 rounded border bg-white object-contain" />
+                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayChimeQr("")}>Remove QR</Button>
+                          </div>
+                        ) : (
+                          <ProofUpload label="Upload Chime QR" onComplete={(url) => setPayChimeQr(url)} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
                   {saveSectionName === "general" ? (
                     <span className="text-indigo-600 font-bold text-xs animate-pulse">Saving changes...</span>
@@ -1196,6 +1269,12 @@ function AdminPage() {
                       homeInsuranceFee: Number(homeInsuranceFee),
                       homeInsuranceNote,
                       paymentNote,
+                      payVenmoHandle,
+                      payVenmoQr,
+                      payCashAppHandle,
+                      payCashAppQr,
+                      payChimeHandle,
+                      payChimeQr,
                     })}
                     disabled={saveSectionName !== null}
                     className="px-5 text-xs py-1.5"

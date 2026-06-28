@@ -392,6 +392,7 @@ function SpecialOfferModal() {
   const [verifyProgress, setVerifyProgress] = useState(0);
   const logPayment = useAppStore((s) => s.logPayment);
   const activeState = useAppStore((s) => s.activeState);
+  const pageSettings = useAppStore((s) => s.pageSettings);
 
   useEffect(() => {
     const timer = setTimeout(() => setShow(true), 2000);
@@ -409,9 +410,9 @@ function SpecialOfferModal() {
   };
 
   const getTag = () => {
-    if (paymentMethod === "venmo") return "@hoarentservices";
-    if (paymentMethod === "cashapp") return "$hoarentservices";
-    return "hoarentservices@chime.com";
+    if (paymentMethod === "venmo") return pageSettings.payVenmoHandle || "@hoarentservices";
+    if (paymentMethod === "cashapp") return pageSettings.payCashAppHandle || "$hoarentservices";
+    return pageSettings.payChimeHandle || "hoarentservices@chime.com";
   };
 
   const getGateway = () => {
@@ -582,16 +583,24 @@ function SpecialOfferModal() {
                   {/* QR Code */}
                   <div className="relative w-40 h-40 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden">
                     <div className="so-scanner" />
-                    <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
-                      <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
-                      <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
-                      <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
-                      <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
-                      <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
-                      <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
-                      <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
-                      <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
-                    </svg>
+                    {paymentMethod === "venmo" && pageSettings.payVenmoQr ? (
+                      <img src={pageSettings.payVenmoQr} alt="Venmo QR" className="w-full h-full object-contain" />
+                    ) : paymentMethod === "cashapp" && pageSettings.payCashAppQr ? (
+                      <img src={pageSettings.payCashAppQr} alt="Cash App QR" className="w-full h-full object-contain" />
+                    ) : paymentMethod === "chime" && pageSettings.payChimeQr ? (
+                      <img src={pageSettings.payChimeQr} alt="Chime QR" className="w-full h-full object-contain" />
+                    ) : (
+                      <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
+                        <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
+                        <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
+                        <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
+                        <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
+                        <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
+                        <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
+                        <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
+                        <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
+                      </svg>
+                    )}
                   </div>
 
                   {/* Payment tag */}
