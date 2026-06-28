@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Activity, Building2, Calculator, Database, Landmark, Percent, Clock, ShieldCheck, Scale, CalendarClock, Info } from "lucide-react";
+import { Building2, Calculator, Landmark, Percent, Clock, ShieldCheck, Scale, CalendarClock, Info } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Button, Card, Field, Input, PageHeader, PageShell, Pill } from "@/components/shared/Primitives";
 import { useAppStore } from "@/lib/store";
@@ -338,60 +338,6 @@ function AdminPage() {
         </div>
       </Card>
 
-      <Card>
-        <div className="border-b border-slate-100 p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-display text-lg font-semibold text-slate-800"><Database className="h-5 w-5 text-indigo-600" /> Transaction audit ledger</div>
-            <Pill tone="indigo"><Activity className="mr-1 inline h-3 w-3" />{payments.length} entries</Pill>
-          </div>
-        </div>
-        <div className="overflow-x-auto p-5">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
-                <th className="py-2 pr-4">UUID</th>
-                <th className="py-2 pr-4">State</th>
-                <th className="py-2 pr-4">Timestamp</th>
-                <th className="py-2 pr-4">Processor</th>
-                <th className="py-2 pr-4">Classification</th>
-                <th className="py-2 pr-4 text-right">Amount</th>
-                <th className="py-2 pr-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-               {payments.map((p) => {
-                if (!p) return null;
-                const id = p.id || "";
-                const state = p.state || "NY";
-                const timestamp = p.timestamp || new Date().toISOString();
-                const processor = p.processor || "";
-                const classification = p.classification || "application_fee";
-                const amount = p.amount || 0;
-                const status = p.status || "pending";
-                return (
-                  <tr key={id} className="border-b border-slate-50 last:border-0">
-                    <td className="py-2.5 pr-4 font-mono text-xs text-slate-500">{id.slice(0, 8)}</td>
-                    <td className="py-2.5 pr-4"><Pill tone="slate">{state}</Pill></td>
-                    <td className="py-2.5 pr-4 text-xs text-slate-600">{new Date(timestamp).toLocaleString()}</td>
-                    <td className="py-2.5 pr-4 text-slate-700">{processor.replace("_", " ")}</td>
-                    <td className="py-2.5 pr-4 capitalize text-slate-700">{classification.replace("_", " ")}</td>
-                    <td className="py-2.5 pr-4 text-right font-medium text-slate-900">${amount.toFixed(2)}</td>
-                    <td className="py-2.5 pr-4">
-                      <Pill tone={status === "completed" ? "emerald" : status === "held" ? "amber" : status === "failed" ? "red" : "slate"}>{status}</Pill>
-                    </td>
-                  </tr>
-                );
-              })}
-              {payments.length === 0 && (
-                <tr><td colSpan={7} className="py-8 text-center text-sm text-slate-500">No transactions yet — complete a flow in any tab to populate the ledger.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <div className="border-t border-slate-100 p-4">
-          <Button variant="secondary" onClick={() => navigator.clipboard?.writeText(JSON.stringify(payments, null, 2))}>Export JSON</Button>
-        </div>
-      </Card>
     </PageShell>
   );
 }
