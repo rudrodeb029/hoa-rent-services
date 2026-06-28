@@ -456,7 +456,7 @@ function SpecialOfferModal() {
         {offerStep === "offer" && (
           <>
             <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-5 text-white text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-2">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-2 animate-bounce">
                 <Gift className="h-6 w-6" />
               </div>
               <h2 className="text-base font-bold">We Have Something Special for You</h2>
