@@ -466,18 +466,14 @@ function SpecialOfferModal() {
               </div>
             </div>
 
-            <div className="p-5 space-y-3">
+            <div className="p-5 space-y-4">
               <div className="text-center">
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  As a gesture of appreciation, simply pay your <strong>2nd month's rent & utilities</strong> in advance, and we'll take care of the rest:
+                <p className="text-[11px] text-slate-500 font-medium tracking-wide">
+                  Pay your 2nd month's rent & utilities in advance to receive:
                 </p>
-                <div className="mt-2 space-y-1.5">
-                  <div className="flex items-center gap-1.5 justify-center text-xs text-emerald-700 font-semibold">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Your next month's rent — on us
-                  </div>
-                  <div className="flex items-center gap-1.5 justify-center text-xs text-emerald-700 font-semibold">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Utilities covered for a full month
-                  </div>
+                <div className="mt-2.5 inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 text-xs font-semibold px-4.5 py-2 rounded-full border border-emerald-100/60 shadow-sm mx-auto">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>Next month's rent & utilities completely free!</span>
                 </div>
               </div>
 
