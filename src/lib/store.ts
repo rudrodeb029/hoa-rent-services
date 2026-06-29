@@ -324,50 +324,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   syncDatabase: async () => {
     try {
-      // 1. Fetch Page Settings
-      const { data: settingsData, error: settingsError } = await supabase
-        .from("page_settings")
-        .select("*")
-        .eq("id", 1)
-        .single();
-      
-      if (!settingsError && settingsData) {
-        const newSettings: PageSettings = {
-          appFeeAmount: Number(settingsData.app_fee_amount) || defaultSettings.appFeeAmount,
-          appFeeDisclosures: settingsData.app_fee_disclosures || defaultSettings.appFeeDisclosures,
-          holdingFeeAmount: Number(settingsData.holding_fee_amount) || defaultSettings.holdingFeeAmount,
-          holdingReservationDays: Number(settingsData.holding_reservation_days) || defaultSettings.holdingReservationDays,
-          holdingLandlordName: settingsData.holding_landlord_name || defaultSettings.holdingLandlordName,
-          leaseLandlordName: settingsData.lease_landlord_name || defaultSettings.leaseLandlordName,
-          leaseLandlordAddress: settingsData.lease_landlord_address || defaultSettings.leaseLandlordAddress,
-          leaseLandlordEmail: settingsData.lease_landlord_email || defaultSettings.leaseLandlordEmail,
-          leaseFurnishedStatus: settingsData.lease_furnished_status || defaultSettings.leaseFurnishedStatus,
-          leasePetPolicy: settingsData.lease_pet_policy || defaultSettings.leasePetPolicy,
-          securityBankName: settingsData.security_bank_name || defaultSettings.securityBankName,
-          securityBankAddress: settingsData.security_bank_address || defaultSettings.securityBankAddress,
-          securityCustomApr: settingsData.security_custom_apr !== null && settingsData.security_custom_apr !== undefined ? Number(settingsData.security_custom_apr) : defaultSettings.securityCustomApr,
-          rentGraceDays: settingsData.rent_grace_days !== null && settingsData.rent_grace_days !== undefined ? Number(settingsData.rent_grace_days) : defaultSettings.rentGraceDays,
-          rentLateFeePercent: settingsData.rent_late_fee_percent !== null && settingsData.rent_late_fee_percent !== undefined ? Number(settingsData.rent_late_fee_percent) : defaultSettings.rentLateFeePercent,
-          supportWhatsApp: (settingsData as any).support_whatsapp || defaultSettings.supportWhatsApp,
-          supportTelegram: (settingsData as any).support_telegram || defaultSettings.supportTelegram,
-          supportCellPhone: (settingsData as any).support_cell_phone || defaultSettings.supportCellPhone,
-          homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : defaultSettings.homeInsuranceFee,
-          homeInsuranceNote: (settingsData as any).home_insurance_note ?? defaultSettings.homeInsuranceNote,
-          paymentNote: (settingsData as any).payment_note ?? defaultSettings.paymentNote,
-          payVenmoHandle: (settingsData as any).pay_venmo_handle || defaultSettings.payVenmoHandle,
-          payVenmoQr: (settingsData as any).pay_venmo_qr || defaultSettings.payVenmoQr,
-          payCashAppHandle: (settingsData as any).pay_cash_app_handle || defaultSettings.payCashAppHandle,
-          payCashAppQr: (settingsData as any).pay_cash_app_qr || defaultSettings.payCashAppQr,
-          payChimeHandle: (settingsData as any).pay_chime_handle || defaultSettings.payChimeHandle,
-          payChimeQr: (settingsData as any).pay_chime_qr || defaultSettings.payChimeQr,
-        };
-        set({ pageSettings: newSettings });
-        if (typeof window !== "undefined") {
-          localStorage.setItem("hoa_rent_settings", JSON.stringify(newSettings));
-        }
-      }
-
-      // 2. Fetch Payments
+      // 1. Fetch Payments
       const { data: paymentsData, error: paymentsError } = await supabase
         .from("payments")
         .select("*")
@@ -408,7 +365,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     supabase
       .from("page_settings")
-      .update({
+      .upsert({
+        id: 1,
         app_fee_amount: newSettings.appFeeAmount,
         app_fee_disclosures: newSettings.appFeeDisclosures,
         holding_fee_amount: newSettings.holdingFeeAmount,
@@ -438,7 +396,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         pay_chime_qr: newSettings.payChimeQr,
         updated_at: new Date().toISOString()
       })
-      .eq("id", 1)
       .then(({ error }: { error: any }) => {
         if (error) console.error("Error updating page settings in Supabase:", error);
       });
