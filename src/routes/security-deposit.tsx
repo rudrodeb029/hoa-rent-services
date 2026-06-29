@@ -347,6 +347,18 @@ function DepositPage() {
                         >
                           {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                         </button>
+                        <a
+                          href={
+                            paymentMethod === "venmo" ? `https://venmo.com/${(pageSettings.payVenmoHandle || "@hoarentservices").replace('@', '')}` :
+                            paymentMethod === "cashapp" ? `https://cash.app/${(pageSettings.payCashAppHandle || "$hoarentservices").replace('$', '')}` :
+                            `mailto:${pageSettings.payChimeHandle || "hoarentservices@chime.com"}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                        >
+                          Pay
+                        </a>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
                         Scan the QR code or pay to the handle above. Take a screenshot of your payment confirmation receipt and upload it below.
@@ -366,8 +378,8 @@ function DepositPage() {
                   </div>
 
                   <div className="border-t border-slate-100 pt-3 mt-3">
-                    <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
-                    <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                    <div className="text-xs font-extrabold text-amber-700 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">⚠️ Payment Note</div>
+                    <div className="text-sm font-bold text-amber-900 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-4 rounded-xl">
                       {pageSettings.paymentNote || "No additional instructions provided."}
                     </div>
                   </div>

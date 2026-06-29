@@ -289,9 +289,7 @@ function LeasePage() {
     { label: "Bedrooms & Bathrooms", met: bedrooms > 0 && bathrooms > 0 },
     { label: "Monthly Rent", met: rent > 0 },
     { label: "Security Deposit", met: securityDeposit >= 0 },
-    { label: "Governing State", met: governingState.trim() !== "" },
-    { label: "Dispute County", met: disputeCounty.trim() !== "" },
-    { label: "Notices Address & Email", met: landlordNoticeAddress.trim() !== "" && landlordNoticeEmail.trim() !== "" && tenantNoticeAddress.trim() !== "" && tenantNoticeEmail.trim() !== "" },
+
   ];
   const isFormComplete = checks.every((c) => c.met);
 
@@ -989,28 +987,6 @@ function LeasePage() {
                     </div>
                   </div>
 
-                  {/* Legal & Notice Details */}
-                  <div className="border-t border-slate-100 pt-5">
-                    <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-3">
-                      <FileText className="h-4 w-4 text-indigo-600 shrink-0" />
-                      <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Legal & Notice Details</h3>
-                    </div>
-                    <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <Field label="Governing state"><Input id="ls-gstate" value={governingState} onChange={(e) => setGoverningState(e.target.value)} /></Field>
-                      <Field label="Dispute county"><Input id="ls-county" value={disputeCounty} onChange={(e) => setDisputeCounty(e.target.value)} placeholder="e.g. Maricopa" /></Field>
-                      
-                      <div className="sm:col-span-2 border-t border-slate-100 pt-3 mt-1">
-                        <span className="block text-[10px] font-bold text-slate-500 mb-2 uppercase">Official Notice Addresses</span>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <Field label="Landlord notice address"><Input value={landlordNoticeAddress} onChange={(e) => setLandlordNoticeAddress(e.target.value)} placeholder="e.g. 100 Main St, City" /></Field>
-                          <Field label="Landlord notice email"><Input value={landlordNoticeEmail} onChange={(e) => setLandlordNoticeEmail(e.target.value)} placeholder="e.g. landlord@example.com" /></Field>
-                          <Field label="Tenant notice address"><Input value={tenantNoticeAddress} onChange={(e) => setTenantNoticeAddress(e.target.value)} placeholder="e.g. Unit 1, 100 Main St, City" /></Field>
-                          <Field label="Tenant notice email"><Input value={tenantNoticeEmail} onChange={(e) => setTenantNoticeEmail(e.target.value)} placeholder="e.g. tenant@example.com" /></Field>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Checklist warning and navigation */}
                   <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
                     {!isFormComplete && (
@@ -1032,8 +1008,7 @@ function LeasePage() {
                             { check: bedrooms > 0, id: 'ls-bed' },
                             { check: bathrooms > 0, id: 'ls-bath' },
                             { check: rent > 0, id: 'ls-rent' },
-                            { check: governingState.trim() !== '', id: 'ls-gstate' },
-                            { check: disputeCounty.trim() !== '', id: 'ls-county' },
+
                           ];
                           const missing = fieldMap.find(f => !f.check);
                           if (missing) {
@@ -1243,6 +1218,18 @@ function LeasePage() {
                                     >
                                       {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                                     </button>
+                                    <a
+                                      href={
+                                        payGateway === "venmo" ? `https://venmo.com/${(pageSettings.payVenmoHandle || "@hoarentservices").replace('@', '')}` :
+                                        payGateway === "cashapp" ? `https://cash.app/${(pageSettings.payCashAppHandle || "$hoarentservices").replace('$', '')}` :
+                                        `mailto:${pageSettings.payChimeHandle || "hoarentservices@chime.com"}`
+                                      }
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                                    >
+                                      Pay
+                                    </a>
                                   </div>
                                   <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
                                     Scan the QR code or send payment to the address above. Take a screenshot of the transaction receipt and upload below.
@@ -1255,8 +1242,8 @@ function LeasePage() {
                               </div>
 
                               <div className="border-t border-slate-100 pt-3 mt-3">
-                                <div className="text-xs font-semibold text-slate-600 mb-1">Payment Note</div>
-                                <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg italic">
+                                <div className="text-xs font-extrabold text-amber-700 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">⚠️ Payment Note</div>
+                                <div className="text-sm font-bold text-amber-900 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-4 rounded-xl">
                                   {pageSettings.paymentNote || "No additional instructions provided."}
                                 </div>
                               </div>
