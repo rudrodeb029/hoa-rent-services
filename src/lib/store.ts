@@ -70,6 +70,7 @@ interface AppState {
   isLoading: boolean;
   showSpecialOffer: boolean;
   setShowSpecialOffer: (show: boolean) => void;
+  clearAllPayments: () => Promise<void>;
   initializeStore: () => Promise<void>;
   syncDatabase: () => Promise<void>;
 }
@@ -450,5 +451,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
 
     return payment;
+  },
+
+  clearAllPayments: async () => {
+    set({ payments: [] });
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("hoa_rent_payments");
+    }
+    try {
+      const { error } = await supabase.from("payments").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      if (error) console.error("Error clearing payments from Supabase:", error);
+    } catch (err) {
+      console.error("Failed to clear payments in Supabase:", err);
+    }
   },
 }));

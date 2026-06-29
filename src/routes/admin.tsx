@@ -29,7 +29,9 @@ import {
   ArrowUpRight,
   Search,
   Filter,
-  Menu
+  Menu,
+  RotateCcw,
+  Trash2
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import type { Payment, PaymentStatus } from "@/lib/types";
@@ -47,6 +49,7 @@ function AdminPage() {
   const payments = useAppStore((s) => s.payments);
   const updatePageSettings = useAppStore((s) => s.updatePageSettings);
   const updatePaymentStatus = useAppStore((s) => s.updatePaymentStatus);
+  const clearAllPayments = useAppStore((s) => s.clearAllPayments);
 
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,6 +78,18 @@ function AdminPage() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem("admin_authenticated");
+  };
+
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetData = async () => {
+    if (window.confirm("Are you sure you want to reset and clear ALL admin panel user data and payment transactions? This action will wipe all submitted user records from the database.")) {
+      setIsResetting(true);
+      await clearAllPayments();
+      setIsResetting(false);
+      setSelectedProofPayment(null);
+      alert("All user data and payment transaction records have been successfully cleared.");
+    }
   };
 
   const [activeSubPage, setActiveSubPage] = useState<
@@ -449,13 +464,23 @@ function AdminPage() {
               <div className="text-[10px] text-slate-500 font-semibold truncate">System Manager</div>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
-            title="Logout"
-          >
-            <LogOut className="h-4.5 w-4.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleResetData}
+              disabled={isResetting}
+              className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition cursor-pointer disabled:opacity-50"
+              title="Reset All User Data"
+            >
+              <RotateCcw className="h-4.5 w-4.5" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+              title="Logout"
+            >
+              <LogOut className="h-4.5 w-4.5" />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -482,6 +507,15 @@ function AdminPage() {
             </h1>
           </div>
           <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={handleResetData}
+              disabled={isResetting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 hover:border-rose-300 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
+              title="Reset and clear all submitted user application and payment records"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+              <span>{isResetting ? "Resetting..." : "Reset All Data"}</span>
+            </button>
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider hidden sm:inline">Active Jurisdiction:</span>
             <span className="bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
