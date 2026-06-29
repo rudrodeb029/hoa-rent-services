@@ -219,7 +219,7 @@ function DepositPage() {
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider ${titleStyle}`}>{t.label}</div>
                     <div className={`mt-1 font-display text-2xl font-extrabold tracking-tight ${valStyle}`}>${v.toFixed(2)}</div>
-                    <div className={`mt-1.5 text-xs font-medium ${descStyle}`}>{t.multiplier}× monthly rent</div>
+
                   </button>
                 );
               })}
