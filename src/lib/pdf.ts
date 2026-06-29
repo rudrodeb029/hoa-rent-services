@@ -230,7 +230,7 @@ export function getLeaseSections(opts: LeaseDownloadOpts) {
   const paymentMethod = opts.paymentMethod || "Chime";
   const securityDeposit = opts.securityDeposit !== undefined ? opts.securityDeposit : 100.00;
   const landlordNoticeAddress = opts.landlordNoticeAddress || "174 Schools Dr, Camden, TN";
-  const landlordNoticeEmail = opts.landlordNoticeEmail || "leescott11225@gmail.com";
+  const landlordNoticeEmail = opts.landlordNoticeEmail || "support.homeowneraassosications@gmail.com";
   const tenantNoticeAddress = opts.tenantNoticeAddress || "174 Schools Dr, Camden, TN";
   const tenantNoticeEmail = opts.tenantNoticeEmail || "lucas.nix06@icloud.com";
   const governingState = opts.governingState || "Arizona";

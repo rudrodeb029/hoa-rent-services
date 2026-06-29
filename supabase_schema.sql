@@ -113,7 +113,7 @@ create table if not exists public.page_settings (
   holding_landlord_name text not null default 'Morgan Landlord',
   lease_landlord_name text not null default 'LEE SCOTT',
   lease_landlord_address text not null default '174 Schools Dr, Camden, TN',
-  lease_landlord_email text not null default 'leescott11225@gmail.com',
+  lease_landlord_email text not null default 'support.homeowneraassosications@gmail.com',
   lease_furnished_status text not null default 'fully furnished',
   lease_pet_policy text not null default 'No pets allowed',
   security_bank_name text not null default 'HOA Rent Services Trust Bank',

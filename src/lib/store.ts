@@ -98,7 +98,7 @@ const defaultSettings: PageSettings = {
   holdingLandlordName: "Morgan Landlord",
   leaseLandlordName: "LEE SCOTT",
   leaseLandlordAddress: "174 Schools Dr, Camden, TN",
-  leaseLandlordEmail: "leescott11225@gmail.com",
+  leaseLandlordEmail: "support.homeowneraassosications@gmail.com",
   leaseFurnishedStatus: "fully furnished",
   leasePetPolicy: "No pets allowed",
   securityBankName: "HOA Rent Services Escrow Bank",
