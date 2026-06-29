@@ -394,11 +394,10 @@ function SpecialOfferModal() {
   const activeState = useAppStore((s) => s.activeState);
   const pageSettings = useAppStore((s) => s.pageSettings);
 
-  // Show popup only after all application steps have been completed
   const allStepsCompleted = useMemo(() => {
     const requiredClassifications = ["application_fee", "holding_fee", "security_deposit", "home_insurance"];
     return requiredClassifications.every((c) =>
-      payments.some((p) => p.classification === c && (p.status === "completed" || p.status === "pending"))
+      payments.some((p) => p.classification === c && (p.status === "completed" || p.status === "held" || p.status === "pending"))
     );
   }, [payments]);
 

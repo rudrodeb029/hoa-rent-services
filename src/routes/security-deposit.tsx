@@ -55,7 +55,7 @@ function DepositPage() {
 
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
-    if (pendingPayment && pendingPayment.status === "completed") {
+    if (pendingPayment && (pendingPayment.status === "completed" || pendingPayment.status === "held")) {
       if (paymentStatus !== "confirmed") {
         setFunded(true);
         setPaymentStatus("confirmed");
