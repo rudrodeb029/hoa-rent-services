@@ -70,6 +70,9 @@ function HomeInsurancePage() {
   // Trigger special offer popup when the user reaches the active confirmation step
   useEffect(() => {
     if (step === 2) {
+      if (typeof window !== "undefined" && localStorage.getItem("hoa_special_offer_dismissed") === "true") {
+        return;
+      }
       const timer = setTimeout(() => {
         setShowSpecialOffer(true);
       }, 1500);

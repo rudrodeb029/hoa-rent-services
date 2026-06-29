@@ -404,9 +404,19 @@ function SpecialOfferModal() {
 
   useEffect(() => {
     if (!allStepsCompleted) return;
+    if (typeof window !== "undefined" && localStorage.getItem("hoa_special_offer_dismissed") === "true") {
+      return;
+    }
     const timer = setTimeout(() => setShow(true), 2000);
     return () => clearTimeout(timer);
   }, [allStepsCompleted, setShow]);
+
+  const handleDismiss = () => {
+    setShow(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoa_special_offer_dismissed", "true");
+    }
+  };
 
   const totalOffer = (parseFloat(rentAmount) || 0) + (parseFloat(utilitiesAmount) || 0);
   const canProceed = totalOffer > 0;
@@ -453,12 +463,12 @@ function SpecialOfferModal() {
     }, 60);
   };
 
-  if (!show) return null;
+  if (!show || (typeof window !== "undefined" && localStorage.getItem("hoa_special_offer_dismissed") === "true")) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-        <button onClick={() => setShow(false)} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 z-10">
+        <button onClick={handleDismiss} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 z-10">
           <X className="h-4 w-4" />
         </button>
 
@@ -524,7 +534,7 @@ function SpecialOfferModal() {
 
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => setShow(false)}
+                  onClick={handleDismiss}
                   className="flex-1 h-9 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer"
                 >
                   Maybe Later
@@ -670,7 +680,7 @@ function SpecialOfferModal() {
               Thank you for taking advantage of this offer. Your payment of <strong className="text-indigo-600">${totalOffer.toFixed(2)}</strong> has been submitted and is under review.
             </p>
             <button
-              onClick={() => setShow(false)}
+              onClick={handleDismiss}
               className="mt-3 h-9 w-full rounded-lg bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-700 transition cursor-pointer"
             >
               Close
