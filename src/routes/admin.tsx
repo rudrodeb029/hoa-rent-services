@@ -938,7 +938,7 @@ function AdminPage() {
 
           {/* VIEW: SETTINGS APPLICATION FEE */}
           {activeSubPage === "settings_app" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="1. Application Fee Page Details" icon={<Receipt className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-4">
                 <Field label="Default Screening Fee (USD)" hint="This amount will override the regional cap on the Application page.">
@@ -969,7 +969,7 @@ function AdminPage() {
 
           {/* VIEW: SETTINGS HOLDING FEE */}
           {activeSubPage === "settings_holding" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="2. Holding Fee Page Details" icon={<ClipboardCheck className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1011,7 +1011,7 @@ function AdminPage() {
 
           {/* VIEW: SETTINGS LEASE AGREEMENT */}
           {activeSubPage === "settings_lease" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="3. Lease Agreement Defaults" icon={<FileSignature className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1069,7 +1069,7 @@ function AdminPage() {
 
           {/* VIEW: SETTINGS SECURITY DEPOSIT */}
           {activeSubPage === "settings_security" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="4. Security Deposit & Escrow" icon={<ShieldCheck className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-4">
                 <Field label="Segregated Trust Bank Name">
@@ -1109,7 +1109,7 @@ function AdminPage() {
 
           {/* VIEW: SETTINGS RENT LEDGER */}
           {activeSubPage === "settings_rent" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="5. Rent Ledger & Roommates" icon={<Wallet className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1145,7 +1145,7 @@ function AdminPage() {
           )}
 
           {activeSubPage === "settings_general" && (
-            <Card className="max-w-2xl bg-white">
+            <Card className="bg-white">
               <CardHeader title="5. General Settings" icon={<Settings className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-6">
                 {/* Support Desk */}
@@ -1188,13 +1188,13 @@ function AdminPage() {
                 {/* Payment Gateways & QR Codes */}
                 <div className="border-t border-slate-100 pt-4">
                   <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Payment Gateways & QR Codes</div>
-                  <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
                     {/* Venmo */}
-                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
                       <Field label="Venmo Handle" hint="Venmo payment tag">
                         <Input value={payVenmoHandle} onChange={(e) => setPayVenmoHandle(e.target.value)} />
                       </Field>
-                      <div className="space-y-2">
+                      <div className="space-y-2 mt-3">
                         <span className="block text-[10px] font-semibold text-slate-500">Venmo QR Image</span>
                         {payVenmoQr ? (
                           <div className="flex items-center gap-3">
@@ -1208,11 +1208,11 @@ function AdminPage() {
                     </div>
 
                     {/* Cash App */}
-                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
                       <Field label="Cash App Tag" hint="Cash App payment tag">
                         <Input value={payCashAppHandle} onChange={(e) => setPayCashAppHandle(e.target.value)} />
                       </Field>
-                      <div className="space-y-2">
+                      <div className="space-y-2 mt-3">
                         <span className="block text-[10px] font-semibold text-slate-500">Cash App QR Image</span>
                         {payCashAppQr ? (
                           <div className="flex items-center gap-3">
@@ -1226,11 +1226,11 @@ function AdminPage() {
                     </div>
 
                     {/* Chime */}
-                    <div className="grid gap-4 sm:grid-cols-2 items-end border border-slate-100 rounded-lg p-3 bg-slate-50/35">
+                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
                       <Field label="Chime Tag / Email" hint="Chime payment handle">
                         <Input value={payChimeHandle} onChange={(e) => setPayChimeHandle(e.target.value)} />
                       </Field>
-                      <div className="space-y-2">
+                      <div className="space-y-2 mt-3">
                         <span className="block text-[10px] font-semibold text-slate-500">Chime QR Image</span>
                         {payChimeQr ? (
                           <div className="flex items-center gap-3">
