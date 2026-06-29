@@ -25,6 +25,7 @@ function HomeInsurancePage() {
   const logPayment = useAppStore((s) => s.logPayment);
   const pageSettings = useAppStore((s) => s.pageSettings);
   const payments = useAppStore((s) => s.payments);
+  const setShowSpecialOffer = useAppStore((s) => s.setShowSpecialOffer);
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
@@ -43,7 +44,7 @@ function HomeInsurancePage() {
 
   const pendingPayment = pendingPaymentId ? payments.find((p) => p.id === pendingPaymentId) : null;
   useEffect(() => {
-    if (pendingPayment && pendingPayment.status === "completed") {
+    if (pendingPayment && (pendingPayment.status === "completed" || pendingPayment.status === "held")) {
       if (paymentStatus !== "confirmed") {
         setPaymentStatus("confirmed");
         setVerificationLogs((prev) => [
@@ -65,6 +66,16 @@ function HomeInsurancePage() {
       }
     }
   }, [pendingPayment, paymentMethod, paymentStatus]);
+
+  // Trigger special offer popup when the user reaches the active confirmation step
+  useEffect(() => {
+    if (step === 2) {
+      const timer = setTimeout(() => {
+        setShowSpecialOffer(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, setShowSpecialOffer]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

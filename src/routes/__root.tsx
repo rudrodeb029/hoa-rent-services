@@ -382,7 +382,8 @@ function LiveSupportFAB() {
 }
 
 function SpecialOfferModal() {
-  const [show, setShow] = useState(false);
+  const show = useAppStore((s) => s.showSpecialOffer);
+  const setShow = useAppStore((s) => s.setShowSpecialOffer);
   const [offerStep, setOfferStep] = useState<"offer" | "payment" | "verifying" | "complete">("offer");
   const [rentAmount, setRentAmount] = useState("");
   const [utilitiesAmount, setUtilitiesAmount] = useState("");
@@ -405,7 +406,7 @@ function SpecialOfferModal() {
     if (!allStepsCompleted) return;
     const timer = setTimeout(() => setShow(true), 2000);
     return () => clearTimeout(timer);
-  }, [allStepsCompleted]);
+  }, [allStepsCompleted, setShow]);
 
   const totalOffer = (parseFloat(rentAmount) || 0) + (parseFloat(utilitiesAmount) || 0);
   const canProceed = totalOffer > 0;

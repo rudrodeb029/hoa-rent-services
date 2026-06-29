@@ -68,6 +68,8 @@ interface AppState {
   logPayment: (p: Omit<Payment, "id" | "timestamp">) => Payment;
   
   isLoading: boolean;
+  showSpecialOffer: boolean;
+  setShowSpecialOffer: (show: boolean) => void;
   initializeStore: () => Promise<void>;
   syncDatabase: () => Promise<void>;
 }
@@ -200,6 +202,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   units: seedUnits,
   pageSettings: getInitialSettings(),
   isLoading: false,
+  showSpecialOffer: false,
+  setShowSpecialOffer: (show) => set({ showSpecialOffer: show }),
   payments: getInitialPayments(),
 
   initializeStore: async () => {
