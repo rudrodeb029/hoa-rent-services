@@ -1219,17 +1219,24 @@ function LeasePage() {
                                       {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                                     </button>
                                     <a
-                                      href={
-                                        payGateway === "venmo" ? `https://venmo.com/${(pageSettings.payVenmoHandle || "@hoarentservices").replace('@', '')}` :
-                                        payGateway === "cashapp" ? `https://cash.app/${(pageSettings.payCashAppHandle || "$hoarentservices").replace('$', '')}` :
-                                        `mailto:${pageSettings.payChimeHandle || "hoarentservices@chime.com"}`
-                                      }
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
-                                    >
-                                      Pay
-                                    </a>
+                                       href={(() => {
+                                         const raw = payGateway === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
+                                                     payGateway === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
+                                                     (pageSettings.payChimeHandle || "hoarentservices@chime.com");
+                                         const h = raw.trim();
+                                         if (h.startsWith("http://") || h.startsWith("https://")) return h;
+                                         if (h.includes("/") || (h.includes(".") && !h.includes("@"))) return `https://${h}`;
+                                         if (payGateway === "venmo") return `https://venmo.com/${h.replace(/^@/, '')}`;
+                                         if (payGateway === "cashapp") return `https://cash.app/${h.startsWith('$') ? h : '$' + h}`;
+                                         if (h.includes("@")) return `mailto:${h}`;
+                                         return `https://${h}`;
+                                       })()}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                                     >
+                                       Pay
+                                     </a>
                                   </div>
                                   <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
                                     Scan the QR code or send payment to the address above. Take a screenshot of the transaction receipt and upload below.

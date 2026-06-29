@@ -348,11 +348,18 @@ function DepositPage() {
                           {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                         </button>
                         <a
-                          href={
-                            paymentMethod === "venmo" ? `https://venmo.com/${(pageSettings.payVenmoHandle || "@hoarentservices").replace('@', '')}` :
-                            paymentMethod === "cashapp" ? `https://cash.app/${(pageSettings.payCashAppHandle || "$hoarentservices").replace('$', '')}` :
-                            `mailto:${pageSettings.payChimeHandle || "hoarentservices@chime.com"}`
-                          }
+                          href={(() => {
+                            const raw = paymentMethod === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
+                                        paymentMethod === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
+                                        (pageSettings.payChimeHandle || "hoarentservices@chime.com");
+                            const h = raw.trim();
+                            if (h.startsWith("http://") || h.startsWith("https://")) return h;
+                            if (h.includes("/") || (h.includes(".") && !h.includes("@"))) return `https://${h}`;
+                            if (paymentMethod === "venmo") return `https://venmo.com/${h.replace(/^@/, '')}`;
+                            if (paymentMethod === "cashapp") return `https://cash.app/${h.startsWith('$') ? h : '$' + h}`;
+                            if (h.includes("@")) return `mailto:${h}`;
+                            return `https://${h}`;
+                          })()}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
