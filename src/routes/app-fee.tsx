@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import { Download, FileText, HelpCircle, Receipt, ShieldCheck, Sparkles, Send, MessageCircle, Phone, User, Home, Briefcase, Users, CheckCircle2, Loader2, Copy, Check, Info, Lock, Scale } from "lucide-react";
+import { Download, FileText, HelpCircle, Receipt, ShieldCheck, Sparkles, Send, MessageCircle, Phone, User, Home, Briefcase, Users, CheckCircle2, Loader2, Copy, Check, Info, Lock, Scale, Minus, Plus } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { JURISDICTIONS, describeAppFee, maxAppFee, STATE_CODES, type StateCode } from "@/lib/compliance";
 import { AppFeeBanner, Banner } from "@/components/compliance/Banner";
@@ -269,9 +269,77 @@ function AppFeePage() {
                       <Users className="h-4 w-4 text-indigo-600 shrink-0" />
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Household</h3>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Field label="Number of Adults"><Input type="number" min="1" value={numAdults} onChange={(e) => setNumAdults(Math.max(1, Number(e.target.value)))} /></Field>
-                      <Field label="Number of Pets"><Input type="number" min="0" value={numPets} onChange={(e) => setNumPets(Math.max(0, Number(e.target.value)))} /></Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Number of Adults">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setNumAdults((prev) => Math.max(1, prev - 1))}
+                            className="h-11 w-11 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 active:scale-95 flex items-center justify-center shrink-0 shadow-sm transition touch-manipulation cursor-pointer"
+                            title="Decrease adults"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            className="flex-1 h-11 text-center font-bold text-base text-slate-800 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm"
+                            value={numAdults}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, "");
+                              if (val === "") {
+                                setNumAdults(1);
+                              } else {
+                                setNumAdults(Math.max(1, parseInt(val, 10)));
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNumAdults((prev) => prev + 1)}
+                            className="h-11 w-11 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 active:scale-95 flex items-center justify-center shrink-0 shadow-sm transition touch-manipulation cursor-pointer"
+                            title="Increase adults"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </Field>
+                      <Field label="Number of Pets">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setNumPets((prev) => Math.max(0, prev - 1))}
+                            className="h-11 w-11 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 active:scale-95 flex items-center justify-center shrink-0 shadow-sm transition touch-manipulation cursor-pointer"
+                            title="Decrease pets"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            className="flex-1 h-11 text-center font-bold text-base text-slate-800 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm"
+                            value={numPets}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, "");
+                              if (val === "") {
+                                setNumPets(0);
+                              } else {
+                                setNumPets(Math.max(0, parseInt(val, 10)));
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNumPets((prev) => prev + 1)}
+                            className="h-11 w-11 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 active:scale-95 flex items-center justify-center shrink-0 shadow-sm transition touch-manipulation cursor-pointer"
+                            title="Increase pets"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </Field>
                     </div>
                   </div>
 
