@@ -398,16 +398,7 @@ function AppFeePage() {
 
             {step === 1 && (
               <div className="space-y-5">
-                {/* Form REV 9.1 Compliance Audit Banner */}
-                <div className={`rounded-xl border p-4 flex gap-3 ${auditReport.compliant ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-amber-200 bg-amber-50 text-amber-950"}`}>
-                  <div className="text-xl">
-                    {auditReport.compliant ? "✅" : "⚠️"}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm">{auditReport.title}</div>
-                    <div className="text-xs mt-0.5 leading-relaxed">{auditReport.message}</div>
-                  </div>
-                </div>
+
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
                   <div className="flex items-center justify-between">

@@ -403,29 +403,14 @@ function DepositPage() {
               <Banner tone="ok" title="Your process is complete">
                 Thank you for connecting with us. Your trust account is active and secured.
               </Banner>
+
+              <div className="pt-4 border-t border-slate-100 flex justify-end">
+                <Link to="/home-insurance">
+                  <Button variant="success">Proceed to Home Insurance →</Button>
+                </Link>
+              </div>
             </div>
           )}
-        </div>
-      </Card>
-
-      <Card className="mt-6">
-        <div className="border-b border-slate-100 p-5">
-          <h2 className="font-display text-lg font-semibold text-slate-800">3 · Download transparency disclosure</h2>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
-          <div className="text-sm text-slate-600">
-            Download your shared transparency disclosure detailing account info, principal, and interest growth.
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={() => downloadEscrowDisclosure({ tenant, bankName: (processor ?? bankName) || "HOA Rent Services Escrow", bankAddress, principal: amount, apr, jurisdiction: j })}>
-              <Download className="h-4 w-4" /> Escrow Disclosure PDF
-            </Button>
-            {paymentStatus === "confirmed" && (
-              <Link to="/home-insurance">
-                <Button variant="success">Proceed to Home Insurance →</Button>
-              </Link>
-            )}
-          </div>
         </div>
       </Card>
 
