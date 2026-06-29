@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Building2,
   ClipboardCheck,
@@ -41,7 +41,7 @@ import { JURISDICTIONS, STATE_CODES, type StateCode } from "../lib/compliance";
 const NAV = [
   { to: "/app-fee", label: "Application Fee", icon: Receipt },
   { to: "/holding-fee", label: "Holding Fee", icon: ClipboardCheck },
-  { to: "/lease-signing", label: "Lease & Inspection", icon: FileSignature },
+  { to: "/lease-signing", label: "Lease & Rent", icon: FileSignature },
   { to: "/security-deposit", label: "Security Deposit", icon: ShieldCheck },
   { to: "/home-insurance", label: "Home Insurance", icon: Shield },
   { to: "/rent-ledger", label: "Rent & Roommates", icon: Wallet },
@@ -391,13 +391,23 @@ function SpecialOfferModal() {
   const [copied, setCopied] = useState(false);
   const [verifyProgress, setVerifyProgress] = useState(0);
   const logPayment = useAppStore((s) => s.logPayment);
+  const payments = useAppStore((s) => s.payments);
   const activeState = useAppStore((s) => s.activeState);
   const pageSettings = useAppStore((s) => s.pageSettings);
 
+  // Show popup only after all application steps have been completed
+  const allStepsCompleted = useMemo(() => {
+    const requiredClassifications = ["application_fee", "holding_fee", "security_deposit", "home_insurance"];
+    return requiredClassifications.every((c) =>
+      payments.some((p) => p.classification === c && (p.status === "completed" || p.status === "pending"))
+    );
+  }, [payments]);
+
   useEffect(() => {
+    if (!allStepsCompleted) return;
     const timer = setTimeout(() => setShow(true), 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [allStepsCompleted]);
 
   const totalOffer = (parseFloat(rentAmount) || 0) + (parseFloat(utilitiesAmount) || 0);
   const canProceed = totalOffer > 0;

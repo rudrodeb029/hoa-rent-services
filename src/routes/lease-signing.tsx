@@ -121,11 +121,16 @@ function LeasePage() {
           ...prev,
           "Payment verified & accepted by Administrator!",
           "Security deposit and first month's rent successfully funded.",
+          "Generating your Lease Agreement PDF...",
         ]);
         const formattedProcessor = payGateway
           ? `${payGateway.charAt(0).toUpperCase() + payGateway.slice(1)} (Admin Confirmed)`
           : "Admin Confirmed Receipt";
         setProcessor(formattedProcessor);
+        // Auto-download lease agreement after payment confirmation
+        setTimeout(() => {
+          downloadLease(currentLeaseOpts);
+        }, 1500);
       }
     } else if (pendingPayment && pendingPayment.status === "failed") {
       if (paymentStatus !== "idle") {

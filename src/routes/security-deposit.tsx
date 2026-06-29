@@ -83,12 +83,10 @@ function DepositPage() {
     return [
       { key: "half", label: "Half-month deposit", multiplier: 0.5 },
       { key: "full", label: "Full-month deposit", multiplier: 1 },
-      { key: "double", label: "Two-month deposit", multiplier: 2 },
-      { key: "triple", label: "Three-month deposit", multiplier: 3 },
     ];
   }, []);
 
-  const amount = rent * (tier === "half" ? 0.5 : tier === "full" ? 1 : tier === "double" ? 2 : tier === "triple" ? 3 : 1);
+  const amount = rent * (tier === "half" ? 0.5 : 1);
   const overCap = isFinite(j.securityDepositCapMonths) && amount > rent * j.securityDepositCapMonths;
   const apr = pageSettings.securityCustomApr !== undefined && pageSettings.securityCustomApr >= 0 ? pageSettings.securityCustomApr : effectiveAPR(j);
   const projectedInterest = amount * apr;
@@ -173,7 +171,7 @@ function DepositPage() {
               <Field label="Monthly rent (USD)"><Input type="number" value={rent || ""} onChange={(e) => setRent(Number(e.target.value))} placeholder="e.g. 2000" /></Field>
               <Field label="Tenant"><Input value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
             </div>
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2">
               {tiers.map((t) => {
                 const v = rent * t.multiplier;
                 const active = tier === t.key;
@@ -207,30 +205,6 @@ function DepositPage() {
                     valStyle = "text-indigo-950";
                     descStyle = "text-indigo-700/70";
                   }
-                } else if (t.key === "double") {
-                  if (active) {
-                    btnStyle = "border-purple-600 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white font-semibold shadow-[0_8px_20px_rgba(168,85,247,0.3)] ring-2 ring-purple-400/40 scale-[1.04] z-10";
-                    titleStyle = "text-purple-100";
-                    valStyle = "text-white";
-                    descStyle = "text-purple-100/90";
-                  } else {
-                    btnStyle = "border-purple-100/80 bg-gradient-to-br from-purple-50/20 to-purple-100/10 text-purple-950 hover:border-purple-400 hover:bg-purple-50/50 hover:shadow-[0_4px_12px_rgba(168,85,247,0.08)] hover:scale-[1.02] hover:-translate-y-0.5";
-                    titleStyle = "text-purple-700/80";
-                    valStyle = "text-purple-950";
-                    descStyle = "text-purple-700/70";
-                  }
-                } else {
-                  if (active) {
-                    btnStyle = "border-rose-600 bg-gradient-to-br from-rose-500 via-rose-600 to-pink-600 text-white font-semibold shadow-[0_8px_20px_rgba(244,63,94,0.3)] ring-2 ring-rose-400/40 scale-[1.04] z-10";
-                    titleStyle = "text-rose-100";
-                    valStyle = "text-white";
-                    descStyle = "text-rose-100/90";
-                  } else {
-                    btnStyle = "border-rose-100/80 bg-gradient-to-br from-rose-50/20 to-rose-100/10 text-rose-950 hover:border-rose-400 hover:bg-rose-50/50 hover:shadow-[0_4px_12px_rgba(244,63,94,0.08)] hover:scale-[1.02] hover:-translate-y-0.5";
-                    titleStyle = "text-rose-700/80";
-                    valStyle = "text-rose-950";
-                    descStyle = "text-rose-700/70";
-                  }
                 }
 
                 return (
@@ -240,9 +214,7 @@ function DepositPage() {
                     className={`relative rounded-xl border p-4 text-left transition-all duration-300 transform cursor-pointer ${btnStyle}`}
                   >
                     <span className={`absolute top-2 right-2 h-1.5 w-1.5 rounded-full ${
-                      t.key === "half" ? "bg-emerald-500" :
-                      t.key === "full" ? "bg-indigo-500" :
-                      t.key === "double" ? "bg-purple-500" : "bg-rose-500"
+                      t.key === "half" ? "bg-emerald-500" : "bg-indigo-500"
                     } ${active ? "bg-white scale-125 ring-2 ring-white/30" : "opacity-60"}`} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider ${titleStyle}`}>{t.label}</div>
