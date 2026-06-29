@@ -152,6 +152,10 @@ create policy "Allow admin update access to page_settings"
   on public.page_settings for update
   using (true);
 
+create policy "Allow admin insert access to page_settings"
+  on public.page_settings for insert
+  with check (true);
+
 
 -- 6. STORAGE BUCKETS SETUP
 -- Run this block inside Supabase console to initialize the bucket and enable access
