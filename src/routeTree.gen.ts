@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SecurityDepositRouteImport } from './routes/security-deposit'
-import { Route as RentLedgerRouteImport } from './routes/rent-ledger'
 import { Route as LeaseSigningRouteImport } from './routes/lease-signing'
 import { Route as HomeInsuranceRouteImport } from './routes/home-insurance'
 import { Route as HoldingFeeRouteImport } from './routes/holding-fee'
@@ -22,11 +21,6 @@ import { Route as IndexRouteImport } from './routes/index'
 const SecurityDepositRoute = SecurityDepositRouteImport.update({
   id: '/security-deposit',
   path: '/security-deposit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RentLedgerRoute = RentLedgerRouteImport.update({
-  id: '/rent-ledger',
-  path: '/rent-ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaseSigningRoute = LeaseSigningRouteImport.update({
@@ -73,7 +67,6 @@ export interface FileRoutesByFullPath {
   '/holding-fee': typeof HoldingFeeRoute
   '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
-  '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
 }
 export interface FileRoutesByTo {
@@ -84,7 +77,6 @@ export interface FileRoutesByTo {
   '/holding-fee': typeof HoldingFeeRoute
   '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
-  '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
 }
 export interface FileRoutesById {
@@ -96,7 +88,6 @@ export interface FileRoutesById {
   '/holding-fee': typeof HoldingFeeRoute
   '/home-insurance': typeof HomeInsuranceRoute
   '/lease-signing': typeof LeaseSigningRoute
-  '/rent-ledger': typeof RentLedgerRoute
   '/security-deposit': typeof SecurityDepositRoute
 }
 export interface FileRouteTypes {
@@ -109,7 +100,6 @@ export interface FileRouteTypes {
     | '/holding-fee'
     | '/home-insurance'
     | '/lease-signing'
-    | '/rent-ledger'
     | '/security-deposit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -120,7 +110,6 @@ export interface FileRouteTypes {
     | '/holding-fee'
     | '/home-insurance'
     | '/lease-signing'
-    | '/rent-ledger'
     | '/security-deposit'
   id:
     | '__root__'
@@ -131,7 +120,6 @@ export interface FileRouteTypes {
     | '/holding-fee'
     | '/home-insurance'
     | '/lease-signing'
-    | '/rent-ledger'
     | '/security-deposit'
   fileRoutesById: FileRoutesById
 }
@@ -143,7 +131,6 @@ export interface RootRouteChildren {
   HoldingFeeRoute: typeof HoldingFeeRoute
   HomeInsuranceRoute: typeof HomeInsuranceRoute
   LeaseSigningRoute: typeof LeaseSigningRoute
-  RentLedgerRoute: typeof RentLedgerRoute
   SecurityDepositRoute: typeof SecurityDepositRoute
 }
 
@@ -154,13 +141,6 @@ declare module '@tanstack/react-router' {
       path: '/security-deposit'
       fullPath: '/security-deposit'
       preLoaderRoute: typeof SecurityDepositRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rent-ledger': {
-      id: '/rent-ledger'
-      path: '/rent-ledger'
-      fullPath: '/rent-ledger'
-      preLoaderRoute: typeof RentLedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lease-signing': {
@@ -223,9 +203,18 @@ const rootRouteChildren: RootRouteChildren = {
   HoldingFeeRoute: HoldingFeeRoute,
   HomeInsuranceRoute: HomeInsuranceRoute,
   LeaseSigningRoute: LeaseSigningRoute,
-  RentLedgerRoute: RentLedgerRoute,
   SecurityDepositRoute: SecurityDepositRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

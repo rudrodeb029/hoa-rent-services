@@ -44,7 +44,6 @@ const NAV = [
   { to: "/lease-signing", label: "Lease & Rent", icon: FileSignature },
   { to: "/security-deposit", label: "Security Deposit", icon: ShieldCheck },
   { to: "/home-insurance", label: "Home Insurance", icon: Shield },
-  { to: "/rent-ledger", label: "Rent & Roommates", icon: Wallet },
   { to: "/admin-compliance", label: "Admin Compliance", icon: Building2 },
 ] as const;
 

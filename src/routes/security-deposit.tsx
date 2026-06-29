@@ -421,8 +421,8 @@ function DepositPage() {
               <Download className="h-4 w-4" /> Escrow Disclosure PDF
             </Button>
             {paymentStatus === "confirmed" && (
-              <Link to="/rent-ledger">
-                <Button variant="success">Proceed to Rent & Roommates →</Button>
+              <Link to="/home-insurance">
+                <Button variant="success">Proceed to Home Insurance →</Button>
               </Link>
             )}
           </div>

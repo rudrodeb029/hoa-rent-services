@@ -412,23 +412,14 @@ function AdminPage() {
               <ShieldCheck className="h-4 w-4" />
               4. Security Escrow
             </button>
-            <button
-              onClick={() => { setActiveSubPage("settings_rent"); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition cursor-pointer text-left ${
-                activeSubPage === "settings_rent" ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
-              }`}
-            >
-              <Wallet className="h-4 w-4" />
-              5. Rent & Roommates
-            </button>
-            <button
+             <button
               onClick={() => { setActiveSubPage("settings_general"); setMobileSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold transition cursor-pointer text-left ${
                 activeSubPage === "settings_general" ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
               }`}
             >
               <Settings className="h-4 w-4" />
-              6. General Settings
+              5. General Settings
             </button>
           </div>
 
@@ -487,7 +478,6 @@ function AdminPage() {
                activeSubPage === "settings_holding" ? "Holding Deposit Settings" :
                activeSubPage === "settings_lease" ? "Lease Signing Defaults" :
                activeSubPage === "settings_security" ? "Security Escrow Settings" :
-               activeSubPage === "settings_rent" ? "Rent Ledger Settings" :
                activeSubPage === "settings_general" ? "General Settings" : "State Regulations"}
             </h1>
           </div>
@@ -1156,7 +1146,7 @@ function AdminPage() {
 
           {activeSubPage === "settings_general" && (
             <Card className="max-w-2xl bg-white">
-              <CardHeader title="6. General Settings" icon={<Settings className="h-4.5 w-4.5" />} />
+              <CardHeader title="5. General Settings" icon={<Settings className="h-4.5 w-4.5" />} />
               <div className="p-5 space-y-6">
                 {/* Support Desk */}
                 <div>
