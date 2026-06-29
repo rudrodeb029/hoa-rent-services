@@ -80,17 +80,6 @@ function HomeInsurancePage() {
     }
   }, [step, setShowSpecialOffer]);
 
-  // Auto-restore confirmed state if home insurance payment is already verified in database/store
-  useEffect(() => {
-    const hasPaid = payments.some(
-      (p) => p && p.classification === "home_insurance" && (p.status === "completed" || p.status === "held")
-    );
-    if (hasPaid) {
-      setStep(2);
-      setPaymentStatus("confirmed");
-    }
-  }, [payments]);
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
