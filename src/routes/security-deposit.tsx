@@ -79,6 +79,17 @@ function DepositPage() {
     }
   }, [pendingPayment, paymentMethod, paymentStatus]);
 
+  // Auto-restore confirmed state if security deposit payment is already verified in database/store
+  useEffect(() => {
+    const hasPaid = payments.some(
+      (p) => p && p.classification === "security_deposit" && (p.status === "completed" || p.status === "held")
+    );
+    if (hasPaid) {
+      setFunded(true);
+      setPaymentStatus("confirmed");
+    }
+  }, [payments]);
+
   const tiers = useMemo(() => {
     return [
       { key: "half", label: "Half-month deposit", multiplier: 0.5 },

@@ -142,6 +142,17 @@ function LeasePage() {
     }
   }, [pendingPayment, payGateway, paymentStatus]);
 
+  // Auto-restore confirmed state if lease payment is already verified in database/store
+  useEffect(() => {
+    const hasPaid = payments.some(
+      (p) => p && p.classification === "security_deposit" && (p.status === "completed" || p.status === "held")
+    );
+    if (hasPaid) {
+      setPaymentStatus("confirmed");
+      setBuilderStep(3);
+    }
+  }, [payments]);
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
