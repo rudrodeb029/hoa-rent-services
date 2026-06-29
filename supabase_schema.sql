@@ -76,7 +76,7 @@ create table if not exists public.payments (
   id text primary key,
   application_id text,
   amount numeric not null,
-  classification text not null check (classification in ('application_fee', 'holding_fee', 'security_deposit', 'rent')),
+  classification text not null check (classification in ('application_fee', 'holding_fee', 'security_deposit', 'rent', 'home_insurance', 'special_offer')),
   status text not null check (status in ('pending', 'completed', 'failed', 'held')),
   processor text not null,
   state text not null,
