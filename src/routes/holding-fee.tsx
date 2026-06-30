@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { Download, AlertTriangle, FileSignature, CreditCard, ClipboardCheck, Loader2, ShieldCheck, CheckCircle2, Check, Copy } from "lucide-react";
 import { Banner } from "@/components/compliance/Banner";
-import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Select, Textarea } from "@/components/shared/Primitives";
+import { Button, Card, Field, Input, PageHeader, PageShell, Pill, Textarea } from "@/components/shared/Primitives";
 import { StepHeader, StepPanel } from "@/components/shared/StepWizard";
 import { ProofUpload } from "@/components/shared/ProofUpload";
 import { VerificationWaitingPanel } from "@/components/shared/EscrowFlowAnimation";
@@ -26,13 +26,6 @@ function HoldingPage() {
   const logPayment = useAppStore((s) => s.logPayment);
   const pageSettings = useAppStore((s) => s.pageSettings);
   const payments = useAppStore((s) => s.payments);
-  const units = useAppStore((s) => s.units);
-  
-  const unitOptions = useMemo(() => {
-    const dbUnits = units.map(u => u.unitNumber);
-    const defaults = ["4B", "210", "101", "102", "201", "202", "301", "302"];
-    return Array.from(new Set([...dbUnits, ...defaults])).sort();
-  }, [units]);
 
   const [step, setStep] = useState(0);
   const [unit, setUnit] = useState("");
@@ -138,14 +131,7 @@ function HoldingPage() {
             {step === 0 && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Your full legal name"><Input id="hf-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
-                 <Field label="Unit number">
-                  <Select id="hf-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
-                    <option value="">Select Unit</option>
-                    {unitOptions.map(opt => (
-                      <option key={opt} value={opt}>Unit {opt}</option>
-                    ))}
-                  </Select>
-                </Field>
+                <Field label="Address"><Input id="hf-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 4B, 100 Main St, City" /></Field>
                 <Field label="Holding Fee (USD)">
                   <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800">
                     ${amount.toFixed(2)} <span className="text-xs font-normal text-slate-500">(fixed fee)</span>

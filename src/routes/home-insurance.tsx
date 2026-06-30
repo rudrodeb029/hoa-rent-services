@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { Download, Shield, CheckCircle2, Copy, Check } from "lucide-react";
 import { Banner } from "@/components/compliance/Banner";
-import { Button, Card, Field, PageHeader, PageShell, Select, Textarea } from "@/components/shared/Primitives";
+import { Button, Card, Field, Input, PageHeader, PageShell, Textarea } from "@/components/shared/Primitives";
 import { StepHeader, StepPanel } from "@/components/shared/StepWizard";
 import { ProofUpload } from "@/components/shared/ProofUpload";
 import { VerificationWaitingPanel } from "@/components/shared/EscrowFlowAnimation";
@@ -26,12 +26,6 @@ function HomeInsurancePage() {
   const pageSettings = useAppStore((s) => s.pageSettings);
   const payments = useAppStore((s) => s.payments);
   const setShowSpecialOffer = useAppStore((s) => s.setShowSpecialOffer);
-  const units = useAppStore((s) => s.units);
-  const unitOptions = useMemo(() => {
-    const dbUnits = units.map(u => u.unitNumber);
-    const defaults = ["4B", "210", "101", "102", "201", "202", "301", "302"];
-    return Array.from(new Set([...dbUnits, ...defaults])).sort();
-  }, [units]);
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
@@ -162,13 +156,8 @@ function HomeInsurancePage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Your full legal name"><input id="hi-name" className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Alex Renter" /></Field>
-                  <Field label="Unit / Property address">
-                    <Select id="hi-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
-                      <option value="">Select Unit</option>
-                      {unitOptions.map(opt => (
-                        <option key={opt} value={opt}>Unit {opt}</option>
-                      ))}
-                    </Select>
+                  <Field label="Address">
+                    <Input id="hi-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 4B, 100 Main St, City" />
                   </Field>
                 </div>
 
