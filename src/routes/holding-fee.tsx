@@ -270,24 +270,26 @@ function HoldingPage() {
                         </div>
 
                         {/* Details */}
-                        <div className="space-y-2 flex-1 w-full text-center sm:text-left">
+                        <div className="space-y-3.5 flex-1 w-full text-center sm:text-left">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                             {selectedGateway.name} Gateway
                           </h4>
                           <div className="text-sm font-semibold text-slate-800">
                             Amount Due: <span className="text-indigo-600">${amount.toFixed(2)}</span>
                           </div>
-                          <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
-                            <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
-                              {selectedGateway.handle}
-                            </span>
-                            <button
-                              onClick={() => copyToClipboard(selectedGateway.handle)}
-                              className="p-1 rounded hover:bg-slate-200 text-slate-500"
-                              title="Copy Handle"
-                            >
-                              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
+                          <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                            <div className="flex items-center justify-between gap-2 bg-slate-100 rounded-xl p-3 flex-1 w-full border border-slate-200/50">
+                              <span className="font-mono text-sm sm:text-base font-bold text-slate-700 truncate select-all">
+                                {selectedGateway.handle}
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(selectedGateway.handle)}
+                                className="p-2 rounded-lg hover:bg-slate-200 text-slate-500 transition shrink-0"
+                                title="Copy Handle"
+                              >
+                                {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                              </button>
+                            </div>
                             <a
                               href={(() => {
                                 const raw = selectedGateway.handle.trim();
@@ -301,13 +303,16 @@ function HoldingPage() {
                               })()}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                              className="w-full sm:w-auto px-6 h-11 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-extrabold transition-all shadow-[0_4px_12px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_20px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 shrink-0"
                             >
-                              Pay
+                              <span>Pay Now</span>
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                              </svg>
                             </a>
                           </div>
                           <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                            Scan the QR code or pay to the handle above. Take a screenshot of your payment confirmation receipt and upload it below.
+                            Scan the QR code or click Pay Now to pay to the handle above. Take a screenshot of your payment confirmation receipt and upload it below.
                           </p>
                         </div>
                       </div>
