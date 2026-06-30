@@ -949,49 +949,7 @@ function LeasePage() {
                     </div>
                   </div>
 
-                  {/* Premises Details */}
-                  <div className="border-t border-slate-100 pt-5">
-                    <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5 mb-3">
-                      <Home className="h-4 w-4 text-indigo-600 shrink-0" />
-                      <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Premises Details</h3>
-                    </div>
-                    <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
-                          {pageSettings.paymentGateways.map((gw) => {
-                            const active = payGateway === gw.id;
-                            let activeStyles = "border-indigo-600 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white font-bold shadow-[0_8px_20px_rgba(99,102,241,0.3)] ring-2 ring-indigo-400/40 scale-[1.04] z-10";
-                            let inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-slate-50/20 to-slate-100/10 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
-                            
-                            if (gw.name.toLowerCase().includes("venmo")) {
-                              if (active) activeStyles = "border-blue-600 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/40 scale-[1.04] z-10";
-                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-blue-50/20 to-blue-100/10 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
-                            } else if (gw.name.toLowerCase().includes("cash")) {
-                              if (active) activeStyles = "border-emerald-600 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white font-bold shadow-[0_8px_20px_rgba(16,185,129,0.3)] ring-2 ring-emerald-400/40 scale-[1.04] z-10";
-                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
-                            } else if (gw.name.toLowerCase().includes("chime")) {
-                              if (active) activeStyles = "border-teal-600 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white font-bold shadow-[0_8px_20px_rgba(20,184,166,0.3)] ring-2 ring-teal-400/40 scale-[1.04] z-10";
-                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-teal-50/20 to-teal-100/10 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
-                            } else if (gw.name.toLowerCase().includes("zelle")) {
-                              if (active) activeStyles = "border-purple-600 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(147,51,234,0.3)] ring-2 ring-purple-400/40 scale-[1.04] z-10";
-                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-purple-50/20 to-purple-100/10 text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
-                            }
 
-                            return (
-                              <button
-                                key={gw.id}
-                                onClick={() => setPayGateway(gw.id)}
-                                className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
-                                  active ? activeStyles : inactiveStyles
-                                }`}
-                              >
-                                <span className="text-xs sm:text-lg font-extrabold tracking-tight">{gw.name}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                    </div>
-                  </div>
 
                   {/* Financial & Payment Terms */}
                   <div className="border-t border-slate-100 pt-5">
@@ -1168,39 +1126,38 @@ function LeasePage() {
                             <h3 className="text-sm font-semibold text-slate-800">Securely fund your lease agreement</h3>
                             <p className="text-xs text-slate-500 mt-1">Total Due: <strong className="text-indigo-600">${(securityDeposit + rent).toFixed(2)}</strong>. Select a digital gateway to view handles & QR.</p>
                           </div>
-                          <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
-                            <button
-                              onClick={() => setPayGateway("venmo")}
-                              className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
-                                payGateway === "venmo"
-                                  ? "border-blue-600 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/40 scale-[1.04] z-10"
-                                  : "border-slate-200/80 bg-gradient-to-br from-blue-50/20 to-blue-100/10 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
-                              }`}
-                            >
-                              <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${payGateway === "venmo" ? "text-white" : "text-[#008CFF]"}`}>Venmo</span>
-                            </button>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+                            {pageSettings.paymentGateways.map((gw) => {
+                              const active = payGateway === gw.id;
+                              let activeStyles = "border-indigo-600 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white font-bold shadow-[0_8px_20px_rgba(99,102,241,0.3)] ring-2 ring-indigo-400/40 scale-[1.04] z-10";
+                              let inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-slate-50/20 to-slate-100/10 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                              
+                              if (gw.name.toLowerCase().includes("venmo")) {
+                                if (active) activeStyles = "border-blue-600 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/40 scale-[1.04] z-10";
+                                else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-blue-50/20 to-blue-100/10 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                              } else if (gw.name.toLowerCase().includes("cash")) {
+                                if (active) activeStyles = "border-emerald-600 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white font-bold shadow-[0_8px_20px_rgba(16,185,129,0.3)] ring-2 ring-emerald-400/40 scale-[1.04] z-10";
+                                else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                              } else if (gw.name.toLowerCase().includes("chime")) {
+                                if (active) activeStyles = "border-teal-600 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white font-bold shadow-[0_8px_20px_rgba(20,184,166,0.3)] ring-2 ring-teal-400/40 scale-[1.04] z-10";
+                                else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-teal-50/20 to-teal-100/10 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                              } else if (gw.name.toLowerCase().includes("zelle")) {
+                                if (active) activeStyles = "border-purple-600 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(147,51,234,0.3)] ring-2 ring-purple-400/40 scale-[1.04] z-10";
+                                else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-purple-50/20 to-purple-100/10 text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                              }
 
-                            <button
-                              onClick={() => setPayGateway("cashapp")}
-                              className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
-                                payGateway === "cashapp"
-                                  ? "border-emerald-600 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white font-bold shadow-[0_8px_20px_rgba(16,185,129,0.3)] ring-2 ring-emerald-400/40 scale-[1.04] z-10"
-                                  : "border-slate-200/80 bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
-                              }`}
-                            >
-                              <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${payGateway === "cashapp" ? "text-white" : "text-[#00D632]"}`}>Cash App</span>
-                            </button>
-
-                            <button
-                              onClick={() => setPayGateway("chime")}
-                              className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
-                                payGateway === "chime"
-                                  ? "border-teal-600 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white font-bold shadow-[0_8px_20px_rgba(20,184,166,0.3)] ring-2 ring-teal-400/40 scale-[1.04] z-10"
-                                  : "border-slate-200/80 bg-gradient-to-br from-teal-50/20 to-teal-100/10 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30 hover:scale-[1.02] hover:-translate-y-0.5"
-                              }`}
-                            >
-                              <span className={`text-xs sm:text-lg font-extrabold tracking-tight transition-colors duration-300 ${payGateway === "chime" ? "text-white" : "text-[#25C974]"}`}>Chime</span>
-                            </button>
+                              return (
+                                <button
+                                  key={gw.id}
+                                  onClick={() => setPayGateway(gw.id)}
+                                  className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                                    active ? activeStyles : inactiveStyles
+                                  }`}
+                                >
+                                  <span className="text-xs sm:text-lg font-extrabold tracking-tight">{gw.name}</span>
+                                </button>
+                              );
+                            })}
                           </div>
 
                           {payGateway && (
