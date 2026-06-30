@@ -472,11 +472,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       payload.payment_gateways = newSettings.paymentGateways;
     }
 
-    supabase
+    return supabase
       .from("page_settings")
       .upsert(payload)
       .then(({ error }: { error: any }) => {
-        if (error) console.error("Error updating page settings in Supabase:", error);
+        if (error) {
+          console.error("Error updating page settings in Supabase:", error);
+          return { success: false, error };
+        }
+        return { success: true };
       });
   },
 

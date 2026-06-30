@@ -37,6 +37,7 @@ import { ProofUpload } from "../components/shared/ProofUpload";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useAppStore } from "../lib/store";
 import { JURISDICTIONS, STATE_CODES, type StateCode } from "../lib/compliance";
+import { Toaster } from "@/components/ui/sonner";
 
 const NAV = [
   { to: "/app-fee", label: "Application Fee", icon: Receipt },
@@ -790,6 +791,8 @@ function RootComponent() {
 
         {/* Floating Live Support Button */}
         {!isAdminRoute && <LiveSupportFAB />}
+        
+        <Toaster />
       </div>
     </QueryClientProvider>
   );
