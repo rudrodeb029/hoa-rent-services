@@ -788,9 +788,9 @@ function AppFeePage() {
                               <button
                                 key={gw.id}
                                 onClick={() => setPaymentMethod(gw.id)}
-                                className="flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                                className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
                                   active ? activeStyles : inactiveStyles
-                                }"
+                                }`}
                               >
                                 <span className="text-xs sm:text-lg font-extrabold tracking-tight">{gw.name}</span>
                               </button>
