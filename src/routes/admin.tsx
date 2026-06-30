@@ -135,6 +135,7 @@ function AdminPage() {
   const [payCashAppQr, setPayCashAppQr] = useState(pageSettings.payCashAppQr);
   const [payChimeHandle, setPayChimeHandle] = useState(pageSettings.payChimeHandle);
   const [payChimeQr, setPayChimeQr] = useState(pageSettings.payChimeQr);
+  const [paymentGateways, setPaymentGateways] = useState(pageSettings.paymentGateways || []);
 
   const [saveSectionName, setSaveSectionName] = useState<string | null>(null);
   const [complianceState, setComplianceState] = useState<StateCode>(activeState);
@@ -193,6 +194,7 @@ function AdminPage() {
     setPayCashAppQr(pageSettings.payCashAppQr);
     setPayChimeHandle(pageSettings.payChimeHandle);
     setPayChimeQr(pageSettings.payChimeQr);
+    setPaymentGateways(pageSettings.paymentGateways || []);
   }, [pageSettings]);
 
   // Helper to save setting sections
@@ -1217,67 +1219,107 @@ function AdminPage() {
                   <Field label="Payment Note" hint="Shown on all payment pages below the proof upload section.">
                     <Textarea value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} rows={3} placeholder="Add payment instructions or notes..." />
                   </Field>
-                </div>
-
-                {/* Payment Gateways & QR Codes */}
-                <div className="border-t border-slate-100 pt-4">
-                  <div className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Payment Gateways & QR Codes</div>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    {/* Venmo */}
-                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
-                      <Field label="Venmo Handle" hint="Venmo payment tag">
-                        <Input value={payVenmoHandle} onChange={(e) => setPayVenmoHandle(e.target.value)} />
-                      </Field>
-                      <div className="space-y-2 mt-3">
-                        <span className="block text-[10px] font-semibold text-slate-500">Venmo QR Image</span>
-                        {payVenmoQr ? (
-                          <div className="flex items-center gap-3">
-                            <img src={payVenmoQr} alt="Venmo QR" className="w-12 h-12 rounded border bg-white object-contain" />
-                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayVenmoQr("")}>Remove QR</Button>
-                          </div>
-                        ) : (
-                          <ProofUpload label="Upload Venmo QR" onComplete={(url) => setPayVenmoQr(url)} />
-                        )}
-                      </div>
+                        {/* Payment Gateways & QR Codes */}
+                <div className="border-t border-slate-100 pt-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Payment Gateways & QR Codes</div>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Add, edit, or delete the payment options presented to tenants.</p>
                     </div>
-
-                    {/* Cash App */}
-                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
-                      <Field label="Cash App Tag" hint="Cash App payment tag">
-                        <Input value={payCashAppHandle} onChange={(e) => setPayCashAppHandle(e.target.value)} />
-                      </Field>
-                      <div className="space-y-2 mt-3">
-                        <span className="block text-[10px] font-semibold text-slate-500">Cash App QR Image</span>
-                        {payCashAppQr ? (
-                          <div className="flex items-center gap-3">
-                            <img src={payCashAppQr} alt="Cash App QR" className="w-12 h-12 rounded border bg-white object-contain" />
-                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayCashAppQr("")}>Remove QR</Button>
-                          </div>
-                        ) : (
-                          <ProofUpload label="Upload Cash App QR" onComplete={(url) => setPayCashAppQr(url)} />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Chime */}
-                    <div className="flex flex-col justify-between border border-slate-100 rounded-lg p-4 bg-slate-50/35 min-h-[185px]">
-                      <Field label="Chime Tag / Email" hint="Chime payment handle">
-                        <Input value={payChimeHandle} onChange={(e) => setPayChimeHandle(e.target.value)} />
-                      </Field>
-                      <div className="space-y-2 mt-3">
-                        <span className="block text-[10px] font-semibold text-slate-500">Chime QR Image</span>
-                        {payChimeQr ? (
-                          <div className="flex items-center gap-3">
-                            <img src={payChimeQr} alt="Chime QR" className="w-12 h-12 rounded border bg-white object-contain" />
-                            <Button variant="danger" className="text-[10px] py-1 px-2.5 h-auto" onClick={() => setPayChimeQr("")}>Remove QR</Button>
-                          </div>
-                        ) : (
-                          <ProofUpload label="Upload Chime QR" onComplete={(url) => setPayChimeQr(url)} />
-                        )}
-                      </div>
-                    </div>
+                    <Button
+                      onClick={() => {
+                        const newId = "custom_" + Date.now();
+                        setPaymentGateways(prev => [
+                          ...prev,
+                          { id: newId, name: "Custom Gateway", handle: "", qrCode: "" }
+                        ]);
+                      }}
+                      className="py-1 px-3 text-[10px] h-auto bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100"
+                    >
+                      + Add Gateway
+                    </Button>
                   </div>
-                </div>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {paymentGateways.map((gw, index) => (
+                      <div key={gw.id} className="relative flex flex-col justify-between border border-slate-200/80 rounded-xl p-4 bg-slate-50/20 shadow-sm min-h-[220px] group hover:border-slate-300 transition duration-300">
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete the "${gw.name || 'custom'}" gateway? Tenants will no longer see this as a payment option.`)) {
+                              setPaymentGateways(prev => prev.filter(g => g.id !== gw.id));
+                            }
+                          }}
+                          className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Delete Gateway"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+
+                        <div className="space-y-3">
+                          <Field label="Gateway Name" hint="e.g. Venmo, Zelle, PayPal">
+                            <Input
+                              value={gw.name}
+                              onChange={(e) => {
+                                const updated = [...paymentGateways];
+                                updated[index] = { ...gw, name: e.target.value };
+                                setPaymentGateways(updated);
+                              }}
+                              placeholder="e.g. Zelle"
+                            />
+                          </Field>
+
+                          <Field label="Payment Handle" hint="Wallet ID, Tag, or Email">
+                            <Input
+                              value={gw.handle}
+                              onChange={(e) => {
+                                const updated = [...paymentGateways];
+                                updated[index] = { ...gw, handle: e.target.value };
+                                setPaymentGateways(updated);
+                              }}
+                              placeholder="e.g. payment@company.com"
+                            />
+                          </Field>
+                        </div>
+
+                        <div className="space-y-2 mt-4 pt-3 border-t border-slate-100/70">
+                          <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gateway QR Code</span>
+                          {gw.qrCode ? (
+                            <div className="flex items-center gap-3">
+                              <img src={gw.qrCode} alt={`${gw.name} QR`} className="w-12 h-12 rounded-lg border bg-white object-contain p-0.5 shadow-sm" />
+                              <Button
+                                variant="danger"
+                                className="text-[9px] py-1 px-2.5 h-auto font-bold uppercase tracking-wider"
+                                onClick={() => {
+                                  const updated = [...paymentGateways];
+                                  updated[index] = { ...gw, qrCode: "" };
+                                  setPaymentGateways(updated);
+                                }}
+                              >
+                                Remove QR
+                              </Button>
+                            </div>
+                          ) : (
+                            <ProofUpload
+                              label={`Upload ${gw.name || 'Gateway'} QR`}
+                              onComplete={(url) => {
+                                const updated = [...paymentGateways];
+                                updated[index] = { ...gw, qrCode: url };
+                                setPaymentGateways(updated);
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {paymentGateways.length === 0 && (
+                      <div className="col-span-full border border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50/50">
+                        <div className="text-slate-400 font-bold text-sm">No payment gateways configured</div>
+                        <p className="text-xs text-slate-400 mt-1">Click "+ Add Gateway" above to create one.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>            </div>
 
                 <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
                   {saveSectionName === "general" ? (
@@ -1293,12 +1335,13 @@ function AdminPage() {
                       homeInsuranceFee: Number(homeInsuranceFee),
                       homeInsuranceNote,
                       paymentNote,
-                      payVenmoHandle,
-                      payVenmoQr,
-                      payCashAppHandle,
-                      payCashAppQr,
-                      payChimeHandle,
-                      payChimeQr,
+                      paymentGateways,
+                      payVenmoHandle: paymentGateways.find(g => g.id === "venmo")?.handle || "",
+                      payVenmoQr: paymentGateways.find(g => g.id === "venmo")?.qrCode || "",
+                      payCashAppHandle: paymentGateways.find(g => g.id === "cashapp")?.handle || "",
+                      payCashAppQr: paymentGateways.find(g => g.id === "cashapp")?.qrCode || "",
+                      payChimeHandle: paymentGateways.find(g => g.id === "chime")?.handle || "",
+                      payChimeQr: paymentGateways.find(g => g.id === "chime")?.qrCode || "",
                     })}
                     disabled={saveSectionName !== null}
                     className="px-5 text-xs py-1.5"

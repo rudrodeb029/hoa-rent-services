@@ -5,7 +5,17 @@ import { supabase } from "./supabase";
 
 const uid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
+export interface PaymentGateway {
+  id: string;
+  name: string;
+  handle: string;
+  qrCode: string;
+}
+
 export interface PageSettings {
+  // Payment Gateways Array
+  paymentGateways: PaymentGateway[];
+
   // App Fee
   appFeeAmount: number;
   appFeeDisclosures: string;
@@ -68,6 +78,7 @@ interface AppState {
   logPayment: (p: Omit<Payment, "id" | "timestamp">) => Payment;
   
   isLoading: boolean;
+  hasPaymentGatewaysColumn: boolean;
   showSpecialOffer: boolean;
   setShowSpecialOffer: (show: boolean) => void;
   clearAllPayments: () => Promise<void>;
@@ -92,6 +103,11 @@ const seedUnits: Unit[] = [
 ];
 
 const defaultSettings: PageSettings = {
+  paymentGateways: [
+    { id: "venmo", name: "Venmo", handle: "@hoarentservices", qrCode: "" },
+    { id: "cashapp", name: "Cash App", handle: "$hoarentservices", qrCode: "" },
+    { id: "chime", name: "Chime", handle: "hoarentservices@chime.com", qrCode: "" },
+  ],
   appFeeAmount: 40,
   appFeeDisclosures: "Regional background check fees are capped by local state landlord-tenant regulations. A refund receipt is generated for your transaction.",
   holdingFeeAmount: 299,
@@ -203,6 +219,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   units: seedUnits,
   pageSettings: getInitialSettings(),
   isLoading: false,
+  hasPaymentGatewaysColumn: false,
   showSpecialOffer: false,
   setShowSpecialOffer: (show) => set({ showSpecialOffer: show }),
   payments: getInitialPayments(),
@@ -219,7 +236,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       
       if (!settingsError && settingsData) {
         const current = get().pageSettings;
+        const hasGatewaysCol = 'payment_gateways' in settingsData;
+        set({ hasPaymentGatewaysColumn: hasGatewaysCol });
+        
+        let loadedGateways: PaymentGateway[] = current.paymentGateways;
+        if (hasGatewaysCol && settingsData.payment_gateways) {
+          try {
+            loadedGateways = typeof settingsData.payment_gateways === 'string'
+              ? JSON.parse(settingsData.payment_gateways)
+              : settingsData.payment_gateways;
+          } catch (err) {
+            console.error("Failed to parse payment_gateways:", err);
+          }
+        } else {
+          // Construct gateways list from traditional columns
+          loadedGateways = [
+            { id: "venmo", name: "Venmo", handle: settingsData.pay_venmo_handle || current.paymentGateways.find(g => g.id === "venmo")?.handle || "@hoarentservices", qrCode: settingsData.pay_venmo_qr || current.paymentGateways.find(g => g.id === "venmo")?.qrCode || "" },
+            { id: "cashapp", name: "Cash App", handle: settingsData.pay_cash_app_handle || current.paymentGateways.find(g => g.id === "cashapp")?.handle || "$hoarentservices", qrCode: settingsData.pay_cash_app_qr || current.paymentGateways.find(g => g.id === "cashapp")?.qrCode || "" },
+            { id: "chime", name: "Chime", handle: settingsData.pay_chime_handle || current.paymentGateways.find(g => g.id === "chime")?.handle || "hoarentservices@chime.com", qrCode: settingsData.pay_chime_qr || current.paymentGateways.find(g => g.id === "chime")?.qrCode || "" }
+          ].filter(g => g.handle); // Only include if it has a handle
+        }
+
         const newSettings: PageSettings = {
+          paymentGateways: loadedGateways,
           appFeeAmount: settingsData.app_fee_amount !== undefined && settingsData.app_fee_amount !== null ? Number(settingsData.app_fee_amount) : current.appFeeAmount,
           appFeeDisclosures: settingsData.app_fee_disclosures !== undefined && settingsData.app_fee_disclosures !== null ? settingsData.app_fee_disclosures : current.appFeeDisclosures,
           holdingFeeAmount: settingsData.holding_fee_amount !== undefined && settingsData.holding_fee_amount !== null ? Number(settingsData.holding_fee_amount) : current.holdingFeeAmount,
@@ -369,39 +408,51 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.setItem("hoa_rent_settings", JSON.stringify(newSettings));
     }
 
+    const payload: any = {
+      id: 1,
+      app_fee_amount: newSettings.appFeeAmount,
+      app_fee_disclosures: newSettings.appFeeDisclosures,
+      holding_fee_amount: newSettings.holdingFeeAmount,
+      holding_reservation_days: newSettings.holdingReservationDays,
+      holding_landlord_name: newSettings.holdingLandlordName,
+      lease_landlord_name: newSettings.leaseLandlordName,
+      lease_landlord_address: newSettings.leaseLandlordAddress,
+      lease_landlord_email: newSettings.leaseLandlordEmail,
+      lease_furnished_status: newSettings.leaseFurnishedStatus,
+      lease_pet_policy: newSettings.leasePetPolicy,
+      security_bank_name: newSettings.securityBankName,
+      security_bank_address: newSettings.securityBankAddress,
+      security_custom_apr: newSettings.securityCustomApr,
+      rent_grace_days: newSettings.rentGraceDays,
+      rent_late_fee_percent: newSettings.rentLateFeePercent,
+      support_whatsapp: newSettings.supportWhatsApp,
+      support_telegram: newSettings.supportTelegram,
+      support_cell_phone: newSettings.supportCellPhone,
+      home_insurance_fee: newSettings.homeInsuranceFee,
+      home_insurance_note: newSettings.homeInsuranceNote,
+      payment_note: newSettings.paymentNote,
+      updated_at: new Date().toISOString()
+    };
+
+    // Extract traditional columns to ensure compatibility
+    const venmo = newSettings.paymentGateways.find(g => g.id === "venmo");
+    const cashapp = newSettings.paymentGateways.find(g => g.id === "cashapp");
+    const chime = newSettings.paymentGateways.find(g => g.id === "chime");
+
+    payload.pay_venmo_handle = venmo ? venmo.handle : "";
+    payload.pay_venmo_qr = venmo ? venmo.qrCode : "";
+    payload.pay_cash_app_handle = cashapp ? cashapp.handle : "";
+    payload.pay_cash_app_qr = cashapp ? cashapp.qrCode : "";
+    payload.pay_chime_handle = chime ? chime.handle : "";
+    payload.pay_chime_qr = chime ? chime.qrCode : "";
+
+    if (get().hasPaymentGatewaysColumn) {
+      payload.payment_gateways = newSettings.paymentGateways;
+    }
+
     supabase
       .from("page_settings")
-      .upsert({
-        id: 1,
-        app_fee_amount: newSettings.appFeeAmount,
-        app_fee_disclosures: newSettings.appFeeDisclosures,
-        holding_fee_amount: newSettings.holdingFeeAmount,
-        holding_reservation_days: newSettings.holdingReservationDays,
-        holding_landlord_name: newSettings.holdingLandlordName,
-        lease_landlord_name: newSettings.leaseLandlordName,
-        lease_landlord_address: newSettings.leaseLandlordAddress,
-        lease_landlord_email: newSettings.leaseLandlordEmail,
-        lease_furnished_status: newSettings.leaseFurnishedStatus,
-        lease_pet_policy: newSettings.leasePetPolicy,
-        security_bank_name: newSettings.securityBankName,
-        security_bank_address: newSettings.securityBankAddress,
-        security_custom_apr: newSettings.securityCustomApr,
-        rent_grace_days: newSettings.rentGraceDays,
-        rent_late_fee_percent: newSettings.rentLateFeePercent,
-        support_whatsapp: newSettings.supportWhatsApp,
-        support_telegram: newSettings.supportTelegram,
-        support_cell_phone: newSettings.supportCellPhone,
-        home_insurance_fee: newSettings.homeInsuranceFee,
-        home_insurance_note: newSettings.homeInsuranceNote,
-        payment_note: newSettings.paymentNote,
-        pay_venmo_handle: newSettings.payVenmoHandle,
-        pay_venmo_qr: newSettings.payVenmoQr,
-        pay_cash_app_handle: newSettings.payCashAppHandle,
-        pay_cash_app_qr: newSettings.payCashAppQr,
-        pay_chime_handle: newSettings.payChimeHandle,
-        pay_chime_qr: newSettings.payChimeQr,
-        updated_at: new Date().toISOString()
-      })
+      .upsert(payload)
       .then(({ error }: { error: any }) => {
         if (error) console.error("Error updating page settings in Supabase:", error);
       });

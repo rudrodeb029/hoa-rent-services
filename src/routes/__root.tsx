@@ -387,7 +387,7 @@ function SpecialOfferModal() {
   const [offerStep, setOfferStep] = useState<"offer" | "payment" | "verifying" | "complete">("offer");
   const [rentAmount, setRentAmount] = useState("");
   const [utilitiesAmount, setUtilitiesAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"venmo" | "cashapp" | "chime" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [verifyProgress, setVerifyProgress] = useState(0);
   const logPayment = useAppStore((s) => s.logPayment);
@@ -429,15 +429,13 @@ function SpecialOfferModal() {
   };
 
   const getTag = () => {
-    if (paymentMethod === "venmo") return pageSettings.payVenmoHandle || "@hoarentservices";
-    if (paymentMethod === "cashapp") return pageSettings.payCashAppHandle || "$hoarentservices";
-    return pageSettings.payChimeHandle || "hoarentservices@chime.com";
+    const gw = pageSettings.paymentGateways.find(g => g.id === paymentMethod);
+    return gw ? gw.handle : "";
   };
 
   const getGateway = () => {
-    if (paymentMethod === "venmo") return "Venmo Gateway";
-    if (paymentMethod === "cashapp") return "Cash App Gateway";
-    return "Chime Digital Portal";
+    const gw = pageSettings.paymentGateways.find(g => g.id === paymentMethod);
+    return gw ? `${gw.name} Gateway` : "";
   };
 
   const handleUploadComplete = (fname: string) => {
@@ -563,37 +561,33 @@ function SpecialOfferModal() {
               <p className="text-[11px] text-slate-500 mt-0.5">Amount: <strong className="text-indigo-600">${totalOffer.toFixed(2)}</strong></p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setPaymentMethod("venmo")}
-                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
-                  paymentMethod === "venmo"
-                    ? "border-blue-500 bg-blue-500 text-white shadow-lg"
-                    : "border-slate-200 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30"
-                }`}
-              >
-                <span className="text-xs font-bold">Venmo</span>
-              </button>
-              <button
-                onClick={() => setPaymentMethod("cashapp")}
-                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
-                  paymentMethod === "cashapp"
-                    ? "border-emerald-500 bg-emerald-500 text-white shadow-lg"
-                    : "border-slate-200 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30"
-                }`}
-              >
-                <span className="text-xs font-bold">Cash App</span>
-              </button>
-              <button
-                onClick={() => setPaymentMethod("chime")}
-                className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
-                  paymentMethod === "chime"
-                    ? "border-teal-500 bg-teal-500 text-white shadow-lg"
-                    : "border-slate-200 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30"
-                }`}
-              >
-                <span className="text-xs font-bold">Chime</span>
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {pageSettings.paymentGateways.map((gw) => {
+                const active = paymentMethod === gw.id;
+                let activeClass = "border-indigo-500 bg-indigo-500 text-white shadow-lg";
+                let inactiveClass = "border-slate-200 text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50/30";
+                if (gw.name.toLowerCase().includes("venmo")) {
+                  activeClass = "border-blue-500 bg-blue-500 text-white shadow-lg";
+                  inactiveClass = "border-slate-200 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30";
+                } else if (gw.name.toLowerCase().includes("cash")) {
+                  activeClass = "border-emerald-500 bg-emerald-500 text-white shadow-lg";
+                  inactiveClass = "border-slate-200 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30";
+                } else if (gw.name.toLowerCase().includes("chime")) {
+                  activeClass = "border-teal-500 bg-teal-500 text-white shadow-lg";
+                  inactiveClass = "border-slate-200 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30";
+                }
+                return (
+                  <button
+                    key={gw.id}
+                    onClick={() => setPaymentMethod(gw.id)}
+                    className={`flex items-center justify-center rounded-lg border p-2.5 transition-all cursor-pointer ${
+                      active ? activeClass : inactiveClass
+                    }`}
+                  >
+                    <span className="text-xs font-bold">{gw.name}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {paymentMethod && (
@@ -602,24 +596,23 @@ function SpecialOfferModal() {
                   {/* QR Code */}
                   <div className="relative w-40 h-40 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden">
                     <div className="so-scanner" />
-                    {paymentMethod === "venmo" && pageSettings.payVenmoQr ? (
-                      <img src={pageSettings.payVenmoQr} alt="Venmo QR" className="w-full h-full object-contain" />
-                    ) : paymentMethod === "cashapp" && pageSettings.payCashAppQr ? (
-                      <img src={pageSettings.payCashAppQr} alt="Cash App QR" className="w-full h-full object-contain" />
-                    ) : paymentMethod === "chime" && pageSettings.payChimeQr ? (
-                      <img src={pageSettings.payChimeQr} alt="Chime QR" className="w-full h-full object-contain" />
-                    ) : (
-                      <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
-                        <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
-                        <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
-                        <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
-                        <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
-                        <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
-                        <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
-                        <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
-                        <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
-                      </svg>
-                    )}
+                    {(() => {
+                      const gw = pageSettings.paymentGateways.find(g => g.id === paymentMethod);
+                      return gw && gw.qrCode ? (
+                        <img src={gw.qrCode} alt={`${gw.name} QR`} className="w-full h-full object-contain" />
+                      ) : (
+                        <svg width="100" height="100" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-800 w-full h-full">
+                          <path d="M1 1h7v2H3v4H1V1zM21 1h7v6h-2V3h-5V1zM1 21h2v5h5v2H1v-7zM28 21v7h-7v-2h5v-5h2z" fill="currentColor" />
+                          <path d="M3 3h7v7H3V3zm1 1v5h5V4H4zM5 5h3v3H5V5z" fill="currentColor" />
+                          <path d="M19 3h7v7h-7V3zm1 1v5h5V4h-5zM21 5h3v3h-3V5z" fill="currentColor" />
+                          <path d="M3 19h7v7H3v-7zm1 1v5h5v-5H4zM5 21h3v3H5v-3z" fill="currentColor" />
+                          <path d="M19 19h2v2h-2v-2zM21 21h2v2h-2v-2zM23 19h2v2h-2v-2zM23 23h2v2h-2v-2zM19 23h2v2h-2v-2z" fill="currentColor" />
+                          <path d="M12 3h2v2h-2V3zM15 3h2v2h-2V3zM12 6h2v2h-2V6zM15 6h2v2h-2V6zM3 12h2v2H3v-2zM6 12h2v2H6v-2zM3 15h2v2H3v-2zM6 15h2v2H6v-2z" fill="currentColor" />
+                          <path d="M12 12h2v2h-2v-2zM14 14h2v2h-2v-2zM16 12h2v2h-2v-2zM12 16h2v2h-2v-2z" fill="currentColor" />
+                          <path d="M9 12h2v2H9v-2zM9 15h2v2H9v-2zM15 9h2v2h-2V9zM12 9h2v2h-2V9z" fill="currentColor" />
+                        </svg>
+                      );
+                    })()}
                   </div>
 
                   {/* Payment tag */}
@@ -627,9 +620,28 @@ function SpecialOfferModal() {
                     <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{getGateway()}</div>
                     <div className="flex items-center justify-center gap-2 bg-slate-100 rounded-lg p-2.5">
                       <span className="font-mono text-sm font-bold text-slate-700 select-all">{getTag()}</span>
-                      <button onClick={() => copyTag(getTag())} className="p-1 rounded hover:bg-slate-200 text-slate-500 cursor-pointer">
-                        {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Settings className="h-3.5 w-3.5" />}
+                      <button onClick={() => copyTag(getTag())} className="p-1 rounded hover:bg-slate-200 text-slate-500 cursor-pointer" title="Copy Handle">
+                        {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                       </button>
+                      <a
+                        href={(() => {
+                          const gw = pageSettings.paymentGateways.find(g => g.id === paymentMethod);
+                          if (!gw) return "#";
+                          const raw = gw.handle.trim();
+                          if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+                          if (raw.includes("/") || (raw.includes(".") && !raw.includes("@"))) return `https://${raw}`;
+                          const name = gw.name.toLowerCase();
+                          if (name.includes("venmo")) return `https://venmo.com/${raw.replace(/^@/, '')}`;
+                          if (name.includes("cash")) return `https://cash.app/${raw.startsWith('$') ? raw : '$' + raw}`;
+                          if (raw.includes("@")) return `mailto:${raw}`;
+                          return `https://${raw}`;
+                        })()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                      >
+                        Pay
+                      </a>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-relaxed">
                       Scan the QR code or pay to the tag above, then upload your confirmation screenshot below.

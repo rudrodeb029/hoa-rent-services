@@ -102,7 +102,7 @@ function LeasePage() {
   const [builderStep, setBuilderStep] = useState(0);
 
   // wizard step 2 payment options
-  const [payGateway, setPayGateway] = useState<"venmo" | "cashapp" | "chime">("venmo");
+  const [payGateway, setPayGateway] = useState<string>("venmo");
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "waiting" | "confirmed">("idle");
   const [verificationLogs, setVerificationLogs] = useState<string[]>([]);
   const [paymentProofFile, setPaymentProofFile] = useState<string | null>(null);
@@ -956,11 +956,39 @@ function LeasePage() {
                       <h3 className="font-display text-sm font-semibold tracking-wider text-slate-800">Premises Details</h3>
                     </div>
                     <div className="grid gap-4 p-1 sm:grid-cols-2">
-                      <div className="grid grid-cols-3 gap-2">
-                        <Field label="Bedrooms"><Input id="ls-bed" type="number" value={bedrooms || ""} onChange={(e) => setBedrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
-                        <Field label="Bathrooms"><Input id="ls-bath" type="number" value={bathrooms || ""} onChange={(e) => setBathrooms(Number(e.target.value))} placeholder="e.g. 1" /></Field>
-                        <Field label="Parking"><Input type="number" value={parkingSpaces || ""} onChange={(e) => setParkingSpaces(Number(e.target.value))} placeholder="e.g. 0" /></Field>
-                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+                          {pageSettings.paymentGateways.map((gw) => {
+                            const active = payGateway === gw.id;
+                            let activeStyles = "border-indigo-600 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white font-bold shadow-[0_8px_20px_rgba(99,102,241,0.3)] ring-2 ring-indigo-400/40 scale-[1.04] z-10";
+                            let inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-slate-50/20 to-slate-100/10 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                            
+                            if (gw.name.toLowerCase().includes("venmo")) {
+                              if (active) activeStyles = "border-blue-600 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(59,130,246,0.3)] ring-2 ring-blue-400/40 scale-[1.04] z-10";
+                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-blue-50/20 to-blue-100/10 text-[#008CFF] hover:border-blue-400 hover:bg-blue-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                            } else if (gw.name.toLowerCase().includes("cash")) {
+                              if (active) activeStyles = "border-emerald-600 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white font-bold shadow-[0_8px_20px_rgba(16,185,129,0.3)] ring-2 ring-emerald-400/40 scale-[1.04] z-10";
+                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-emerald-50/20 to-emerald-100/10 text-[#00D632] hover:border-emerald-400 hover:bg-emerald-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                            } else if (gw.name.toLowerCase().includes("chime")) {
+                              if (active) activeStyles = "border-teal-600 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white font-bold shadow-[0_8px_20px_rgba(20,184,166,0.3)] ring-2 ring-teal-400/40 scale-[1.04] z-10";
+                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-teal-50/20 to-teal-100/10 text-[#25C974] hover:border-teal-400 hover:bg-teal-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                            } else if (gw.name.toLowerCase().includes("zelle")) {
+                              if (active) activeStyles = "border-purple-600 bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600 text-white font-bold shadow-[0_8px_20px_rgba(147,51,234,0.3)] ring-2 ring-purple-400/40 scale-[1.04] z-10";
+                              else inactiveStyles = "border-slate-200/80 bg-gradient-to-br from-purple-50/20 to-purple-100/10 text-purple-600 hover:border-purple-400 hover:bg-purple-50/30 hover:scale-[1.02] hover:-translate-y-0.5";
+                            }
+
+                            return (
+                              <button
+                                key={gw.id}
+                                onClick={() => setPayGateway(gw.id)}
+                                className="flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-4.5 transition-all duration-300 transform cursor-pointer ${
+                                  active ? activeStyles : inactiveStyles
+                                }"
+                              >
+                                <span className="text-xs sm:text-lg font-extrabold tracking-tight">{gw.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
 
                     </div>
                   </div>
@@ -1177,72 +1205,65 @@ function LeasePage() {
 
                           {payGateway && (
                             <div className="rounded-xl border border-slate-200 p-5 bg-white space-y-4">
-                              <div className="flex flex-col sm:flex-row gap-6 items-center">
-                                {/* QR Code scan container */}
-                                <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
-                                  <div className="scanner-line" />
-                                  {payGateway === "venmo" && pageSettings.payVenmoQr ? (
-                                    <img src={pageSettings.payVenmoQr} alt="Venmo QR" className="w-full h-full object-contain" />
-                                  ) : payGateway === "cashapp" && pageSettings.payCashAppQr ? (
-                                    <img src={pageSettings.payCashAppQr} alt="Cash App QR" className="w-full h-full object-contain" />
-                                  ) : payGateway === "chime" && pageSettings.payChimeQr ? (
-                                    <img src={pageSettings.payChimeQr} alt="Chime QR" className="w-full h-full object-contain" />
-                                  ) : (
-                                    <QRCodeSVG />
-                                  )}
-                                </div>
+                              {(() => {
+                    const selectedGateway = pageSettings.paymentGateways.find(g => g.id === payGateway);
+                    if (!selectedGateway) return null;
+                    return (
+                      <div className="flex flex-col sm:flex-row gap-6 items-center">
+                        {/* QR Code Scan Container */}
+                        <div className="relative w-56 h-56 border-2 border-indigo-100 rounded-xl p-2 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="scanner-line" />
+                          {selectedGateway.qrCode ? (
+                            <img src={selectedGateway.qrCode} alt={`${selectedGateway.name} QR`} className="w-full h-full object-contain" />
+                          ) : (
+                            <QRCodeSVG />
+                          )}
+                        </div>
 
-                                <div className="space-y-2 flex-1 w-full text-center sm:text-left">
-                                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                                    {payGateway === "venmo" && "Venmo Gateway"}
-                                    {payGateway === "cashapp" && "Cash App Gateway"}
-                                    {payGateway === "chime" && "Chime Digital Portal"}
-                                  </h4>
-                                  <div className="text-sm font-semibold text-slate-800">
-                                    Amount Due: <span className="text-indigo-600">${(securityDeposit + rent).toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
-                                    <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
-                                      {payGateway === "venmo" && (pageSettings.payVenmoHandle || "@hoarentservices")}
-                                      {payGateway === "cashapp" && (pageSettings.payCashAppHandle || "$hoarentservices")}
-                                      {payGateway === "chime" && (pageSettings.payChimeHandle || "hoarentservices@chime.com")}
-                                    </span>
-                                    <button
-                                      onClick={() => copyToClipboard(
-                                        payGateway === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
-                                        payGateway === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
-                                        (pageSettings.payChimeHandle || "hoarentservices@chime.com")
-                                      )}
-                                      className="p-1 rounded hover:bg-slate-200 text-slate-500"
-                                      title="Copy handle"
-                                    >
-                                      {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                                    </button>
-                                    <a
-                                       href={(() => {
-                                         const raw = payGateway === "venmo" ? (pageSettings.payVenmoHandle || "@hoarentservices") :
-                                                     payGateway === "cashapp" ? (pageSettings.payCashAppHandle || "$hoarentservices") :
-                                                     (pageSettings.payChimeHandle || "hoarentservices@chime.com");
-                                         const h = raw.trim();
-                                         if (h.startsWith("http://") || h.startsWith("https://")) return h;
-                                         if (h.includes("/") || (h.includes(".") && !h.includes("@"))) return `https://${h}`;
-                                         if (payGateway === "venmo") return `https://venmo.com/${h.replace(/^@/, '')}`;
-                                         if (payGateway === "cashapp") return `https://cash.app/${h.startsWith('$') ? h : '$' + h}`;
-                                         if (h.includes("@")) return `mailto:${h}`;
-                                         return `https://${h}`;
-                                       })()}
-                                       target="_blank"
-                                       rel="noopener noreferrer"
-                                       className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
-                                     >
-                                       Pay
-                                     </a>
-                                  </div>
-                                  <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                                    Scan the QR code or send payment to the address above. Take a screenshot of the transaction receipt and upload below.
-                                  </p>
-                                </div>
-                              </div>
+                        {/* Details */}
+                        <div className="space-y-2 flex-1 w-full text-center sm:text-left">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            {selectedGateway.name} Gateway
+                          </h4>
+                          <div className="text-sm font-semibold text-slate-800">
+                            Amount Due: <span className="text-indigo-600">${(securityDeposit + rent).toFixed(2)}</span>
+                          </div>
+                          <div className="flex items-center justify-center sm:justify-start gap-2 bg-slate-100 rounded-lg p-3 mt-1">
+                            <span className="font-mono text-base font-bold text-slate-700 truncate select-all">
+                              {selectedGateway.handle}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(selectedGateway.handle)}
+                              className="p-1 rounded hover:bg-slate-200 text-slate-500"
+                              title="Copy Handle"
+                            >
+                              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                            <a
+                              href={(() => {
+                                const raw = selectedGateway.handle.trim();
+                                if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+                                if (raw.includes("/") || (raw.includes(".") && !raw.includes("@"))) return `https://${raw}`;
+                                const name = selectedGateway.name.toLowerCase();
+                                if (name.includes("venmo")) return `https://venmo.com/${raw.replace(/^@/, '')}`;
+                                if (name.includes("cash")) return `https://cash.app/${raw.startsWith('$') ? raw : '$' + raw}`;
+                                if (raw.includes("@")) return `mailto:${raw}`;
+                                return `https://${raw}`;
+                              })()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-1 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                            >
+                              Pay
+                            </a>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                            Scan the QR code or pay to the handle above. Take a screenshot of your payment confirmation receipt and upload it below.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                               <div className="border-t border-slate-100 pt-4">
                                 <ProofUpload label="Upload your payment screenshot" onComplete={(fname) => startPaymentVerification(fname)} />

@@ -133,6 +133,11 @@ create table if not exists public.page_settings (
   pay_cash_app_qr text not null default '',
   pay_chime_handle text not null default 'hoarentservices@chime.com',
   pay_chime_qr text not null default '',
+  payment_gateways jsonb not null default '[
+    {"id": "venmo", "name": "Venmo", "handle": "@hoarentservices", "qrCode": ""},
+    {"id": "cashapp", "name": "Cash App", "handle": "$hoarentservices", "qrCode": ""},
+    {"id": "chime", "name": "Chime", "handle": "hoarentservices@chime.com", "qrCode": ""}
+  ]'::jsonb,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
