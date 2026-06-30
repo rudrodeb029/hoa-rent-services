@@ -38,6 +38,7 @@ import type { Payment, PaymentStatus } from "@/lib/types";
 import { PageShell, PageHeader, Card, CardHeader, Button, Field, Input, Select, Textarea, Pill } from "@/components/shared/Primitives";
 import { JURISDICTIONS, STATE_CODES, type StateCode } from "@/lib/compliance";
 import { ProofUpload } from "../components/shared/ProofUpload";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -197,13 +198,21 @@ function AdminPage() {
     setPaymentGateways(pageSettings.paymentGateways || []);
   }, [pageSettings]);
 
-  // Helper to save setting sections
-  const handleSaveSection = (section: string, updates: Partial<typeof pageSettings>) => {
+   // Helper to save setting sections
+  const handleSaveSection = async (section: string, updates: Partial<typeof pageSettings>) => {
     setSaveSectionName(section);
-    setTimeout(() => {
-      updatePageSettings(updates);
+    try {
+      const res = await updatePageSettings(updates);
+      if (res && !res.success) {
+        toast.error(`Failed to save settings: ${res.error?.message || "Unknown error"}`);
+      } else {
+        toast.success("Settings saved successfully!");
+      }
+    } catch (err: any) {
+      toast.error(`Error saving settings: ${err.message || err}`);
+    } finally {
       setSaveSectionName(null);
-    }, 600);
+    }
   };
 
   const handleApprove = (pId: string, classification: string) => {

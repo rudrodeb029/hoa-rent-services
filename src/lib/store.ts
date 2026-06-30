@@ -72,7 +72,7 @@ interface AppState {
   payments: Payment[];
 
   pageSettings: PageSettings;
-  updatePageSettings: (settings: Partial<PageSettings>) => void;
+  updatePageSettings: (settings: Partial<PageSettings>) => Promise<{ success: boolean; error?: any }>;
   updatePaymentStatus: (id: string, status: PaymentStatus) => void;
 
   logPayment: (p: Omit<Payment, "id" | "timestamp">) => Payment;

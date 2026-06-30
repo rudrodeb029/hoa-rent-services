@@ -402,14 +402,7 @@ function SpecialOfferModal() {
     );
   }, [payments]);
 
-  useEffect(() => {
-    if (!allStepsCompleted) return;
-    if (typeof window !== "undefined" && localStorage.getItem("hoa_special_offer_dismissed") === "true") {
-      return;
-    }
-    const timer = setTimeout(() => setShow(true), 2000);
-    return () => clearTimeout(timer);
-  }, [allStepsCompleted, setShow]);
+  // Do not show automatically on page load anymore. Will be triggered upon completing lease signing.
 
   const handleDismiss = () => {
     setShow(false);

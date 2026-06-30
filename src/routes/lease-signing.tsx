@@ -1300,7 +1300,12 @@ function LeasePage() {
                             <h3 className="text-base font-semibold text-slate-800">Security Deposit Funded!</h3>
                             <p className="text-xs text-slate-500 mt-1">Transaction proof verified successfully. You may proceed to download documents.</p>
                           </div>
-                          <Button className="w-full" onClick={() => setBuilderStep(3)}>Proceed to Documents</Button>
+                          <Button className="w-full" onClick={() => {
+                            setBuilderStep(3);
+                            useAppStore.getState().setShowSpecialOffer(true);
+                          }}>
+                            Proceed to Documents
+                          </Button>
                         </div>
                       )}
                     </>
