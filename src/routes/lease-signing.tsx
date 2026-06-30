@@ -63,6 +63,12 @@ function LeasePage() {
   const logPayment = useAppStore((s) => s.logPayment);
   const pageSettings = useAppStore((s) => s.pageSettings);
   const payments = useAppStore((s) => s.payments);
+  const units = useAppStore((s) => s.units);
+  const unitOptions = useMemo(() => {
+    const dbUnits = units.map(u => u.unitNumber);
+    const defaults = ["4B", "210", "101", "102", "201", "202", "301", "302"];
+    return Array.from(new Set([...dbUnits, ...defaults])).sort();
+  }, [units]);
   const j = JURISDICTIONS[activeState];
 
   const [tenant, setTenant] = useState("");
@@ -943,7 +949,14 @@ function LeasePage() {
                       <Field label="Tenant name"><Input id="ls-tenant" value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="e.g. Avery Tenant" /></Field>
                       <Field label="Landlord name"><Input id="ls-landlord" value={landlordName} onChange={(e) => setLandlordName(e.target.value)} placeholder="e.g. Morgan Landlord" /></Field>
                       <Field label="Agreement date"><Input id="ls-agdate" type="date" value={agreementDate} onChange={(e) => setAgreementDate(e.target.value)} /></Field>
-                      <Field label="Unit / Address"><Input id="ls-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. Unit 1, 100 Main St, City" /></Field>
+                      <Field label="Unit / Address">
+                        <Select id="ls-unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
+                          <option value="">Select Unit</option>
+                          {unitOptions.map(opt => (
+                            <option key={opt} value={opt}>Unit {opt}</option>
+                          ))}
+                        </Select>
+                      </Field>
                       <Field label="Start date"><Input id="ls-start" type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
                       <Field label="End date"><Input id="ls-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
                     </div>
