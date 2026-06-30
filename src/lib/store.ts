@@ -240,7 +240,26 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ hasPaymentGatewaysColumn: hasGatewaysCol });
         
         let loadedGateways: PaymentGateway[] = current.paymentGateways;
-        if (hasGatewaysCol && settingsData.payment_gateways) {
+        let loadedPaymentNote = settingsData.payment_note || "";
+
+        // Check if there is a serialized gateways list in the payment_note
+        const gatewayMarker = "[GATEWAYS_JSON:";
+        const markerIndex = loadedPaymentNote.indexOf(gatewayMarker);
+        
+        if (markerIndex !== -1) {
+          const jsonStart = markerIndex + gatewayMarker.length;
+          const jsonEnd = loadedPaymentNote.lastIndexOf("]");
+          if (jsonEnd !== -1 && jsonEnd > jsonStart) {
+            const jsonStr = loadedPaymentNote.substring(jsonStart, jsonEnd);
+            try {
+              loadedGateways = JSON.parse(jsonStr);
+              // Strip the serialized data from the note
+              loadedPaymentNote = loadedPaymentNote.substring(0, markerIndex).trim();
+            } catch (err) {
+              console.error("Failed to parse serialized gateways from payment_note:", err);
+            }
+          }
+        } else if (hasGatewaysCol && settingsData.payment_gateways) {
           try {
             loadedGateways = typeof settingsData.payment_gateways === 'string'
               ? JSON.parse(settingsData.payment_gateways)
@@ -279,7 +298,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           supportCellPhone: (settingsData as any).support_cell_phone !== undefined && (settingsData as any).support_cell_phone !== null ? (settingsData as any).support_cell_phone : current.supportCellPhone,
           homeInsuranceFee: (settingsData as any).home_insurance_fee !== null && (settingsData as any).home_insurance_fee !== undefined ? Number((settingsData as any).home_insurance_fee) : current.homeInsuranceFee,
           homeInsuranceNote: (settingsData as any).home_insurance_note !== undefined && (settingsData as any).home_insurance_note !== null ? (settingsData as any).home_insurance_note : current.homeInsuranceNote,
-          paymentNote: (settingsData as any).payment_note !== undefined && (settingsData as any).payment_note !== null ? (settingsData as any).payment_note : current.paymentNote,
+          paymentNote: loadedPaymentNote || current.paymentNote,
           payVenmoHandle: (settingsData as any).pay_venmo_handle !== undefined && (settingsData as any).pay_venmo_handle !== null ? (settingsData as any).pay_venmo_handle : current.payVenmoHandle,
           payVenmoQr: (settingsData as any).pay_venmo_qr !== undefined && (settingsData as any).pay_venmo_qr !== null ? (settingsData as any).pay_venmo_qr : current.payVenmoQr,
           payCashAppHandle: (settingsData as any).pay_cash_app_handle !== undefined && (settingsData as any).pay_cash_app_handle !== null ? (settingsData as any).pay_cash_app_handle : current.payCashAppHandle,
@@ -408,6 +427,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.setItem("hoa_rent_settings", JSON.stringify(newSettings));
     }
 
+    const rawPaymentNote = newSettings.paymentNote || "";
+    const serializedGateways = `\n\n[GATEWAYS_JSON:${JSON.stringify(newSettings.paymentGateways)}]`;
+
     const payload: any = {
       id: 1,
       app_fee_amount: newSettings.appFeeAmount,
@@ -430,7 +452,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       support_cell_phone: newSettings.supportCellPhone,
       home_insurance_fee: newSettings.homeInsuranceFee,
       home_insurance_note: newSettings.homeInsuranceNote,
-      payment_note: newSettings.paymentNote,
+      payment_note: rawPaymentNote + serializedGateways,
       updated_at: new Date().toISOString()
     };
 
